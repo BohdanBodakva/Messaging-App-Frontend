@@ -1,13 +1,24 @@
-import React, {use, useState} from "react";
+import React, {use, useEffect, useRef, useState} from "react";
 import './Chats.css';
 import back_button_svg from "../../images/back_button.svg";
 import user_svg from "../../images/user.svg";
 import group_svg from "../../images/group.svg";
 import Message from "./Message";
+import PreviewFiles from "./PreviewFiles";
+import LoadingSpinner from "../Spinner/LoadingSpinner";
 
-function ChatArea ({ currentUser, chat, onBack }) {
+function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessageList }) {
 
+    const [messageText, setMessageText] = useState("");
 
+    const containerRef = useRef(null);
+    const scrollToBottom = () => {
+        if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+    };
+
+    const [previewFiles, setPreviewFiles] = useState([]);
 
     const chatUsers = chat.users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
@@ -33,6 +44,40 @@ function ChatArea ({ currentUser, chat, onBack }) {
         }
     }
 
+    function sendMessage() {
+
+        if (!messageText) {
+            return;
+        }
+
+        const newMessage = {
+            "chat_id": chat.id,
+            "user_id": currentUser.id,
+            "is_read": false,
+            "send_at": new Date(),
+            "senf_files": [],
+            "text": messageText,
+            "id": Math.random()
+        }
+
+        setMessageList(messageList.concat(newMessage));
+
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+
+        setMessageText("")
+        setPreviewFiles([])
+    }
+
+    const handleFileChange = (event) => {
+        setPreviewFiles(Array.from(event.target.files)); // Convert FileList to Array
+    };
+
+
+    useEffect(() => {
+        scrollToBottom()
+    }, [messageList]);
+
+
     return (
         <div className="chat-details">
             <div className="chat-header">
@@ -49,8 +94,10 @@ function ChatArea ({ currentUser, chat, onBack }) {
                 </div>
                 <img src={chatPhoto} alt="chat-photo" className="chat-photo chat-header-photo"/>
             </div>
-            <div className="messages">
-                {chat.messages.map((message) => {
+            <div className="messages scrollable" ref={containerRef} style={{position: 'relative'}} >
+                {loading && <LoadingSpinner  />}
+
+                {messageList.map((message) => {
                     const sendByCurrentUser = message.user_id === currentUser.id;
 
                     let senderPhoto = user_svg;
@@ -78,9 +125,26 @@ function ChatArea ({ currentUser, chat, onBack }) {
                     )
                 })}
             </div>
+            {previewFiles.length > 0 &&
+                <div className="preview scrollable">
+                    <PreviewFiles files={previewFiles}/>
+                </div>
+            }
             <div className="message-input">
-                <input type="text" placeholder="Type a message..." />
-                <button>Send</button>
+                <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Enter a message..."
+                    rows="4"
+                    cols="50">
+                </textarea>
+                <input type="file" id="file" className="file-input" onChange={handleFileChange} multiple/>
+                <label htmlFor="file" className="file-label">
+                    <span className="file-icon">📁</span>
+                </label>
+                <button onClick={sendMessage}>
+                    Send
+                </button>
             </div>
         </div>
     );

@@ -70,8 +70,11 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
             )}
             <div onContextMenu={sendByCurrentUser ? handleContextMenu : null} className="message-content">
                 {!sendByCurrentUser && <h5>{senderName}</h5>}
-                <p>{message.text}</p>
-                <span className={`message-time ${sendByCurrentUser ? "sent-time" : ""}`}>{getFormattedDate(message.send_at)}</span>
+                <pre><p>{message.text}</p></pre>
+                <span
+                    className={`message-time ${sendByCurrentUser ? "sent-time" : ""}`}>
+                    {getFormattedDate(message.send_at)}
+                </span>
             </div>
 
             {deleteMenu && (
