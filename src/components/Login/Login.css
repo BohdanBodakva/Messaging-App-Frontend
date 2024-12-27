@@ -5,6 +5,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease-in-out;
     width: 300px;
+    position: relative;
 }
 
 @media only screen and (max-width: 400px) {
@@ -61,4 +62,39 @@
 
 .toggle button:hover {
     color: #005bb5;
+}
+
+.success-message {
+    background-color: #beffbb;
+    border: 1px solid #456c49;
+    color: #00b60b;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-icon {
+    font-size: 20px;
+}
+
+.error-text {
+    font-size: 14px;
+    flex-grow: 1;
 }
