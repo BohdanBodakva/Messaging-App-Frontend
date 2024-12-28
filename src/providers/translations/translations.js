@@ -5,9 +5,14 @@ export const translations = {
         ua: "Увійти"
     },
     signup: {
-        en: "Login",
-        de: "Login",
-        ua: "Увійти"
+        en: "Signup",
+        de: "Signup",
+        ua: "Зареєструватися"
+    },
+    changeLanguage: {
+        en: "Change language",
+        de: "Sprache ändern",
+        ua: "Змінити мову"
     },
     dontHaveAccountMessage: {
         en: "Don't have account? Sign up",
@@ -68,6 +73,21 @@ export const translations = {
         en: "Delete",
         de: "Löschen",
         ua: "Видалити"
+    },
+    noUsersFound: {
+        en: "No users found",
+        de: "Keine Benutzer gefunden",
+        ua: "Не знайдено користувачів"
+    },
+    lastSeenAt: {
+        en: "Last seen at",
+        de: "Zuletzt gesehen am",
+        ua: "Востаннє у мережі о"
+    },
+    selectChatToStartMessaging: {
+        en: "Select a chat to start messaging",
+        de: "Wählen Sie einen Chat aus, um mit dem Versenden von Nachrichten zu beginnen",
+        ua: "Оберіть чат, щоб почати спілкування"
     },
     search: {
       en: "Search",

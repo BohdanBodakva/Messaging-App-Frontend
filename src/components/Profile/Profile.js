@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import "./Profile.css";
-import makeRequest from "../../logic/HttpRequests";
 import {useNavigate} from "react-router-dom";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
 import user_svg from "../../images/user.svg";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
 import settings_svg from '../../images/settings_button.svg';
+import back_button_svg from "../../images/back_button.svg";
 
-function Profile({ currentUser, setCurrentUser }) {
+function Profile({ currentUser, setCurrentUser, onBack }) {
     const { language } = useLanguage();
     const navigate = useNavigate();
 
@@ -28,52 +28,46 @@ function Profile({ currentUser, setCurrentUser }) {
 
 
     useEffect(() => {
-        if (!currentUser){
-            setLoading(true);
-            console.log(currentUser);
 
-            const currentUserId = localStorage.getItem("current_user_id");
-
-            if (currentUserId) {
-                async function loadCurrentUser() {
-                    const url = `/users/${currentUserId}`;
-
-                    let response;
-                    try {
-                        response = await makeRequest("GET", url);
-
-                        const user = response.data.user;
-                        setCurrentUser(user);
-
-                        setNameInput(user.name);
-                        if (user.surname) {
-                            setSurnameInput(user.surname);
-                        }
-                        setUsernameInput(user.username);
-                    } catch (error) {
-                        navigate("/login");
-                    }
-
-                    setLoading(false);
-                }
-                loadCurrentUser();
-            } else {
-                setLoading(false);
-                navigate("/login");
-                return;
-            }
+        setNameInput(currentUser.name);
+        if (currentUser.surname) {
+            setSurnameInput(currentUser.surname);
         }
-    }, [])
+        setUsernameInput(currentUser.username);
+
+    }, [currentUser])
 
 
 
 
     const handleInputChange = (field, value) => {
-        // setUser({ ...user, [field]: value });
+        if (field === "name") {
+            setNameInput(value);
+        } else if (field === "surname") {
+            setSurnameInput(value);
+        } else if (field === "username") {
+            setUsernameInput(value);
+        } else if (field === "currentPasswordInput") {
+            setCurrentPasswordInput(value);
+        } else if (field === "newPasswordInput") {
+            setNewPasswordInput(value);
+        } else if (field === "repeatedPasswordInput") {
+            setRepeatedPasswordInput(value);
+        } else if (field === "currentPasswordInput") {
+            setCurrentPasswordInput(value);
+        } else if (field === "newPasswordInput") {
+            setNewPasswordInput(value);
+        } else if (field === "repeatedPasswordInput") {
+            setRepeatedPasswordInput(value);
+        }
     };
 
     const togglePasswordModal = () => {
         setPasswordModalOpen(!isPasswordModalOpen);
+
+        setCurrentPasswordInput('');
+        setNewPasswordInput('');
+        setRepeatedPasswordInput('');
     };
 
     const toggleSettingsModal = () => {
@@ -88,6 +82,10 @@ function Profile({ currentUser, setCurrentUser }) {
 
     }
 
+    function selectNewPhoto() {
+
+    }
+
     return (
         <div style={{position: "relative"}}>
             {loading && (<LoadingSpinner />)}
@@ -95,17 +93,42 @@ function Profile({ currentUser, setCurrentUser }) {
                 <div>
                     <div className={`user-settings ${isPasswordModalOpen || isSettingsModalOpen ? "blurred" : ""}`} >
                         <div className="profile-section">
-                            <h2>{translations.profile[language]}</h2>
+                            <div className="profile-header">
+                                <div className="go-back">
+                                    <button className="back-button" onClick={onBack}>
+                                        <img src={back_button_svg} alt={currentUser.username}
+                                             className="back-button-image"/>
+                                    </button>
+                                </div>
+                                <h2>{translations.profile[language]}</h2>
+                                <div className="go-back">
+                                    <button className="back-button" onClick={onBack}>
+                                        <img src={back_button_svg} alt={currentUser.username}
+                                             className="back-button-image"/>
+                                    </button>
+                                </div>
+                            </div>
                             <div className="profile-photo">
-                                <img src={currentUser.profile_photo_link ? currentUser.profile_photo_link : user_svg}
-                                     alt="User"/>
+                                <div className="profile-photo-image">
+                                    <img
+                                        src={currentUser.profile_photo_link ? currentUser.profile_photo_link : user_svg}
+                                        alt="User"
+                                    />
+                                </div>
+                                <div className="choose-photo">
+                                    <input type="file" id="file" className="file-input" onChange={selectNewPhoto}
+                                           multiple/>
+                                    <label htmlFor="file" className="file-label">
+                                        <span className="file-icon">📁</span>
+                                    </label>
+                                </div>
                             </div>
                             <div className="user-fields">
                                 <label>
                                     {translations.name[language]}
                                     <input
                                         type="text"
-                                        value={currentUser.name}
+                                        value={nameInput}
                                         onChange={(e) => handleInputChange("name", e.target.value)}
                                     />
                                 </label>
@@ -113,7 +136,7 @@ function Profile({ currentUser, setCurrentUser }) {
                                     {translations.surname[language]}
                                     <input
                                         type="text"
-                                        value={currentUser.surname}
+                                        value={surnameInput}
                                         onChange={(e) => handleInputChange("surname", e.target.value)}
                                     />
                                 </label>
@@ -121,7 +144,7 @@ function Profile({ currentUser, setCurrentUser }) {
                                     {translations.username[language]}
                                     <input
                                         type="text"
-                                        value={currentUser.username}
+                                        value={usernameInput}
                                         onChange={(e) => handleInputChange("username", e.target.value)}
                                     />
                                 </label>
@@ -148,6 +171,10 @@ function Profile({ currentUser, setCurrentUser }) {
                         <ChangePassword
                             onClose={togglePasswordModal}
                             changePassword={changePassword}
+                            currentPassword={currentPasswordInput}
+                            newPassword={newPasswordInput}
+                            repeatedPassword={repeatedPasswordInput}
+                            handleInputChange={handleInputChange}
                         />
                     )}
 
@@ -164,19 +191,19 @@ function Profile({ currentUser, setCurrentUser }) {
     );
 }
 
-function ChangePassword({onClose, changePassword}) {
+function ChangePassword({onClose, handleInputChange, changePassword, currentPassword, newPassword, repeatedPassword}) {
     const { language } = useLanguage();
 
     return (
         <div className="password-modal">
-        <div className="password-modal-content">
+            <div className="password-modal-content">
                 <h3>{translations.changePassword[language]}</h3>
                 <label>{translations.currentPassword[language]}</label>
-                <input type="password"/>
+                <input type="password" value={currentPassword} onChange={(e) => handleInputChange("currentPasswordInput", e.target.value)}/>
                 <label>{translations.newPassword[language]}</label>
-                <input type="password"/>
+                <input type="password" value={newPassword} onChange={(e) => handleInputChange("newPasswordInput", e.target.value)}/>
                 <label>{translations.confirmPassword[language]}</label>
-                <input type="password"/>
+                <input type="password" value={repeatedPassword} onChange={(e) => handleInputChange("repeatedPasswordInput", e.target.value)}/>
                 <button className="save-password-button" onClick={changePassword}>
                     {translations.save[language]}
                 </button>

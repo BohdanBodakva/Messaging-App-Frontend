@@ -113,13 +113,18 @@ function Chats ({ currentUser = null, setCurrentUser }) {
 
     }
 
+    function closeProfileWindow () {
+        setIsUserProfileDisplayed(false);
+    }
+
     return (
-        <div style={{position: "relative"}}>
+        <div className="main-app-block" style={{position: "relative"}}>
             {isUserProfileDisplayed && (
                 <div className="displayed-user-profile">
                     <Profile
                         currentUser={currentUser}
                         setCurrentUser={setCurrentUser}
+                        onBack={closeProfileWindow}
                     />
                 </div>
             )}
@@ -153,7 +158,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                                     <div className="found-users scrollable">
                                         {foundUsers.length === 0 && (
                                             <div className="no-users-found">
-                                                <p>No users found</p>
+                                                <p>{translations.noUsersFound[language]}</p>
                                             </div>
                                         )}
 
@@ -195,7 +200,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                     </div>
                 ) : (
                     <div className="no-chat-selected">
-                        <p>Select a chat to start messaging</p>
+                        <p>{translations.selectChatToStartMessaging[language]}</p>
                     </div>
                 )}
             </div>

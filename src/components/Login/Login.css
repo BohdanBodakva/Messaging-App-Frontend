@@ -1,3 +1,7 @@
+.login {
+    overflow-y: hidden;
+}
+
 .form-container {
     background: white;
     padding: 20px;
@@ -44,6 +48,32 @@
 
 .form-container form button:hover {
     background-color: #005bb5;
+}
+
+.lang-selector {
+    margin-top: 10px;
+}
+
+.lang-selector-top {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.choose-lang-text {
+    display: flex;
+    justify-content: center;
+    height: fit-content;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+}
+
+.choose-lang-text p {
+    margin: 0;
+    padding: 0;
 }
 
 .toggle {

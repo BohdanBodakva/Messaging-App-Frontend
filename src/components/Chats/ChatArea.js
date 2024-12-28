@@ -77,6 +77,9 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
 
 
     useEffect(() => {
+        setMessageText('');
+        setPreviewFiles([]);
+
         scrollToBottom()
     }, [messageList]);
 

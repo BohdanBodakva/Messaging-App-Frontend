@@ -8,7 +8,7 @@ export const LanguageProvider = ({ children }) => {
     const supportedLanguages = ["en", "de", "ua"];
     const currentLanguage = previousLanguage && supportedLanguages.includes(previousLanguage) ?
         previousLanguage :
-        "en"
+        "ua"
 
     const [language, setLanguage] = useState(currentLanguage);
 
