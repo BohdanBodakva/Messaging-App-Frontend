@@ -129,7 +129,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                 </div>
             )}
             <div className={`app ${isUserProfileDisplayed ? "blurred" : ""}`}>
-                <div className="chats-bar">
+                <div className={`chats-bar ${selectedChat ? "chat-is-selected" : ""}`}>
                     <div className="pinned-user-bar">
                         <div className="current-user-block">
                             {currentUser &&

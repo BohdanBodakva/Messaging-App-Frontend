@@ -8,7 +8,6 @@ const LanguageSelector = ({ currentLanguageKey, onLanguageChange }) => {
 
     const languages = [
         { name: "English", key: "en" },
-        { name: "Deutsch", key: "de" },
         { name: "Українська", key: "ua" },
     ];
 

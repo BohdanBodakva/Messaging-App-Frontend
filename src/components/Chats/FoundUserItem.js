@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import './Chats.css';
-import user_svg from '../../images/user.svg';
+import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function FoundUserItem ({ user, onClick }) {
 
     return (
         <div className="chat-item" onClick={onClick}>
-            <img src={user.profile_photo_link ? user.profile_photo_link : user_svg}
-                 alt={user.username} className="chat-photo" />
+            <img src={user.profile_photo_link ?
+                user.profile_photo_link :
+                getDefaultProfilePhotoLink(user.name)}
+                 alt={user.username}
+                 className={`chat-photo ${user.profile_photo_link ? "black-border" : ""}`}
+            />
             <div className="chat-info">
                 <div className="chat-info-header">
                     <h4>{user.name} {user.surname}</h4>

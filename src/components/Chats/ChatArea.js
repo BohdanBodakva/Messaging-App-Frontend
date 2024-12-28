@@ -1,13 +1,13 @@
-import React, {use, useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import './Chats.css';
 import back_button_svg from "../../images/back_button.svg";
-import user_svg from "../../images/user.svg";
 import group_svg from "../../images/group.svg";
 import Message from "./Message";
 import PreviewFiles from "./PreviewFiles";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
+import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessageList }) {
     const { language } = useLanguage();
@@ -28,7 +28,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
 
     const isGroup = otherUsers.length > 2;
 
-    let chatPhoto = user_svg
+    let chatPhoto = getDefaultProfilePhotoLink(currentUser.name)
     let chatName;
     if (isGroup) {
         chatName = chat.name;
@@ -98,7 +98,11 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                         </div>
                     )}
                 </div>
-                <img src={chatPhoto} alt="chat-photo" className="chat-photo chat-header-photo"/>
+                <img
+                    src={chatPhoto}
+                    alt="chat-photo"
+                    className={`chat-photo chat-header-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
+                />
             </div>
             <div className="messages scrollable" ref={containerRef} style={{position: 'relative'}} >
                 {loading && <LoadingSpinner  />}
@@ -106,7 +110,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                 {messageList.map((message) => {
                     const sendByCurrentUser = message.user_id === currentUser.id;
 
-                    let senderPhoto = user_svg;
+                    let senderPhoto = null;
                     let senderName;
                     if (!sendByCurrentUser) {
                         const user = otherUsers.filter((otherUser) => otherUser.id === message.user_id)[0];
@@ -140,7 +144,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                 <textarea
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Enter a message..."
+                    placeholder={`${translations.enterMessage[language]}...`}
                     rows="4"
                     cols="50">
                 </textarea>

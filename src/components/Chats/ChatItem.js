@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './Chats.css';
-import user_svg from '../../images/user.svg';
 import group_svg from "../../images/group.svg";
+import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
 
@@ -10,7 +10,7 @@ function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
 
     const isGroup = otherUsers.length > 2;
 
-    let chatPhoto = user_svg
+    let chatPhoto = getDefaultProfilePhotoLink(currentUser.name)
     let chatName;
     let secondUser;
 
@@ -36,7 +36,11 @@ function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
             className={`chat-item ${selectedChat && selectedChat.id === chat.id ? "selected" : ""}`}
             onClick={onClick}
         >
-            <img src={chatPhoto} alt={chat.name} className="chat-photo" />
+            <img
+                src={chatPhoto}
+                alt={chat.name}
+                className={`chat-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
+            />
             <div className="chat-info">
                 <div className="chat-info-header">
                     <h4>{chatName}</h4>

@@ -5,10 +5,10 @@ const LanguageContext = createContext();
 export const LanguageProvider = ({ children }) => {
     const previousLanguage = localStorage.getItem("messenger_language");
 
-    const supportedLanguages = ["en", "de", "ua"];
+    const supportedLanguages = ["en", "ua"];
     const currentLanguage = previousLanguage && supportedLanguages.includes(previousLanguage) ?
         previousLanguage :
-        "ua"
+        supportedLanguages[0]
 
     const [language, setLanguage] = useState(currentLanguage);
 

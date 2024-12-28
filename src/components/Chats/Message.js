@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import './Chats.css';
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
+import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto }) {
     const { language } = useLanguage();
@@ -68,7 +69,11 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
     return (
         <div onClick={handleClick} className={`message ${sendByCurrentUser ? "sent" : "received"}`}>
             {(!sendByCurrentUser && !isGroup) && (
-                <img src={senderPhoto} alt={message.id} className="message-photo" />
+                <img
+                    src={senderPhoto ? senderPhoto : getDefaultProfilePhotoLink(senderName)}
+                    alt={message.id}
+                    className={`message-photo ${senderPhoto ? "black-border" : ""}`}
+                />
             )}
             <div onContextMenu={sendByCurrentUser ? handleContextMenu : null} className="message-content">
                 {!sendByCurrentUser && <h5>{senderName}</h5>}

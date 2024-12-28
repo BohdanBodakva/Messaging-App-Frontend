@@ -1,49 +1,14 @@
 .user-settings {
-    width: 100%;
+    width: 25vw;
     margin: 20px auto;
-    padding: 20px;
+    padding: 25px;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 100%;
-}
-
-.profile-photo-image {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.profile-photo-image img {
-    margin-bottom: 5px !important;
-}
-
-.central-block {
-    position: relative;
-    width: 40%;
-    height: 90%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-@media only screen and (max-width: 750px) {
-    .central-block {
-        width: 100%;
-        height: 100%;
-    }
-}
-
-.inner-block {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 78vh;
 }
 
 .setting-buttons {
@@ -52,40 +17,31 @@
     justify-content: center;
 }
 
+.go-back {
+    display: flex;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+}
+
 .profile-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 15px;
-}
-
-.profile-header h2 {
-    margin: 4px 0 0 0;
-    padding: 0;
-}
-
-.logout {
-    display: flex;
-    justify-content: center;
-}
-
-.go-back {
-    display: flex;
-    justify-content: right;
-    margin: 0;
-    width: fit-content;
 }
 
 .go-back button {
     display: flex;
     justify-content: center;
+    height: 40px;
+    width: 40px;
 }
 
 .go-back button img {
     display: flex;
     justify-content: center;
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
 }
 
 .profile-section {
@@ -94,14 +50,12 @@
 }
 
 .profile-photo img {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     margin-bottom: 20px;
-}
-
-.black-border img {
-    border: 2px solid #000000;
+    padding: 7px;
+    border: 2px solid #484a4c;
 }
 
 .user-fields label {
@@ -112,6 +66,7 @@
 }
 
 .user-fields input {
+    width: 100%;
     padding: 10px;
     margin-top: 5px;
     border: 1px solid #ccc;

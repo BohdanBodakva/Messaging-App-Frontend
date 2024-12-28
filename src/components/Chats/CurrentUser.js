@@ -1,18 +1,18 @@
-import React, {use, useState} from "react";
+import React from "react";
 import './Chats.css';
-import user_svg from '../../images/user.svg';
 import settings_svg from '../../images/settings_button.svg';
-import {useNavigate} from "react-router-dom";
+import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function CurrentUser ({ user, displayUserProfile }) {
-    const navigate = useNavigate();
 
     return (
         <div className="current-user">
             <img
-                src={user.profile_photo_link ? user.profile_photo_link : user_svg}
+                src={user.profile_photo_link ?
+                    user.profile_photo_link :
+                    getDefaultProfilePhotoLink(user.name)}
                 alt={user.username}
-                className="user-photo"
+                className={`user-photo ${user.profile_photo_link ? "black-border" : ""}`}
             />
             <div className="user-info">
                 <h4>{user.name}</h4>
