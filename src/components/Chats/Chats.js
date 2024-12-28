@@ -5,11 +5,17 @@ import ChatArea from "./ChatArea";
 import CurrentUser from "./CurrentUser";
 import {useNavigate} from "react-router-dom";
 import makeRequest from "../../logic/HttpRequests";
-import LoadingSpinner from "../Spinner/LoadingSpinner";
 import FoundUserItem from "./FoundUserItem";
+import {useLanguage} from "../../providers/translations/LanguageProvider";
+import {translations} from "../../providers/translations/translations";
+import Profile from "../Profile/Profile";
 
 function Chats ({ currentUser = null, setCurrentUser }) {
+    const { language } = useLanguage();
+
     const navigate = useNavigate();
+
+    const[isUserProfileDisplayed, setIsUserProfileDisplayed] = useState(false);
 
     const [foundUsersInput, setFoundUsersInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
@@ -52,7 +58,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                     let response;
                     try {
                         response = await makeRequest("GET", url);
-                        console.log(response);
+
                         setChats(response.data.user.chats);
                     } catch (error) {
                         navigate("/login");
@@ -108,80 +114,91 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     }
 
     return (
-        <div className="app">
-            <div className="chats-bar">
-                <div className="pinned-user-bar">
-                    <div className="current-user-block">
-                        {currentUser && <CurrentUser user={currentUser}/>}
-                    </div>
-                    <div className="search-users message-input">
-                        <div className="message-input-block">
-                            <div className="found-users-input-block">
-                                <input
-                                    type="text"
-                                    value={foundUsersInput}
-                                    onChange={searchUsers}
-                                    placeholder="🔍 Search..."
-                                />
-                                {foundUsersInput ? (
-                                    <div className="clear-input-btn">
-                                        <button onClick={clearFoundUsersInput}>❌</button>
-                                    </div>
-                                ) : (
-                                    <div className="clear-input-btn">
-                                        <button onClick={createGroup}>Create group</button>
+        <div style={{position: "relative"}}>
+            {isUserProfileDisplayed && (
+                <div className="displayed-user-profile">
+                    <Profile
+                        currentUser={currentUser}
+                        setCurrentUser={setCurrentUser}
+                    />
+                </div>
+            )}
+            <div className={`app ${isUserProfileDisplayed ? "blurred" : ""}`}>
+                <div className="chats-bar">
+                    <div className="pinned-user-bar">
+                        <div className="current-user-block">
+                            {currentUser &&
+                                <CurrentUser displayUserProfile={setIsUserProfileDisplayed} user={currentUser}/>}
+                        </div>
+                        <div className="search-users message-input">
+                            <div className="message-input-block">
+                                <div className="found-users-input-block">
+                                    <input
+                                        type="text"
+                                        value={foundUsersInput}
+                                        onChange={searchUsers}
+                                        placeholder={`🔍 ${translations.search[language]}...`}
+                                    />
+                                    {foundUsersInput ? (
+                                        <div className="clear-input-btn">
+                                            <button onClick={clearFoundUsersInput}>❌</button>
+                                        </div>
+                                    ) : (
+                                        <div className="clear-input-btn">
+                                            <button onClick={createGroup}>{translations.newGroup[language]}</button>
+                                        </div>
+                                    )}
+                                </div>
+                                {foundUsersInput && (
+                                    <div className="found-users scrollable">
+                                        {foundUsers.length === 0 && (
+                                            <div className="no-users-found">
+                                                <p>No users found</p>
+                                            </div>
+                                        )}
+
+                                        {foundUsers.length > 0 && foundUsers.map((user) => (
+                                            <FoundUserItem
+                                                key={user.id}
+                                                user={user}
+                                                onClick={() => {
+                                                }}
+                                            />
+                                        ))}
                                     </div>
                                 )}
                             </div>
-                            {foundUsers.length > 0 && (
-                                <div className="found-users scrollable">
-                                {foundUsersInput && foundUsers.length === 0 && (
-                                        <div className="no-users-found">
-                                            <p>No users found</p>
-                                        </div>
-                                    )}
-
-                                    {foundUsers.map((user) => (
-                                        <FoundUserItem
-                                            key={user.id}
-                                            user={user}
-                                            onClick={() => {
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     </div>
+                    <div className="scrollable">
+                        {chats.map((chat) => (
+                            <ChatItem
+                                key={chat.id}
+                                chat={chat}
+                                currentUser={currentUser}
+                                selectedChat={selectedChat}
+                                onClick={() => selectChat(chat.id)}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="scrollable">
-                    {chats.map((chat) => (
-                        <ChatItem
-                            key={chat.id}
-                            chat={chat}
+                {selectedChat ? (
+                    <div className="chat-area">
+                        <ChatArea
+                            loading={loading}
+                            chat={selectedChat}
                             currentUser={currentUser}
-                            selectedChat={selectedChat}
-                            onClick={() => selectChat(chat.id)}
+                            messageList={messageList}
+                            setMessageList={setMessageList}
+                            onBack={() => setSelectedChat(null)}
                         />
-                    ))}
-                </div>
+                    </div>
+                ) : (
+                    <div className="no-chat-selected">
+                        <p>Select a chat to start messaging</p>
+                    </div>
+                )}
             </div>
-            {selectedChat ? (
-                <div className="chat-area">
-                    <ChatArea
-                        loading={loading}
-                        chat={selectedChat}
-                        currentUser={currentUser}
-                        messageList={messageList}
-                        setMessageList={setMessageList}
-                        onBack={() => setSelectedChat(null)}
-                    />
-                </div>
-            ) : (
-                <div className="no-chat-selected">
-                    <p>Select a chat to start messaging</p>
-                </div>
-            )}
         </div>
     );
 }

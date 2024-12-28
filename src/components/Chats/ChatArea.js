@@ -6,8 +6,11 @@ import group_svg from "../../images/group.svg";
 import Message from "./Message";
 import PreviewFiles from "./PreviewFiles";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
+import {useLanguage} from "../../providers/translations/LanguageProvider";
+import {translations} from "../../providers/translations/translations";
 
 function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessageList }) {
+    const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
 
@@ -143,7 +146,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                     <span className="file-icon">📁</span>
                 </label>
                 <button onClick={sendMessage}>
-                    Send
+                    {translations.send[language]}
                 </button>
             </div>
         </div>

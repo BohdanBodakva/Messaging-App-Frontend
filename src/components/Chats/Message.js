@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
 import './Chats.css';
-import { parse } from 'date-fns';
-import {str} from "ajv";
+import {useLanguage} from "../../providers/translations/LanguageProvider";
+import {translations} from "../../providers/translations/translations";
 
 function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto }) {
+    const { language } = useLanguage();
+
     const [deleteMenu, setDeleteMenu] = useState(null);
 
     const handleContextMenu = (event) => {
@@ -35,7 +37,7 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
             (sendDate.getMonth() === todayDate.getMonth()) &&
             (sendDate.getFullYear() === todayDate.getFullYear());
         if (isToday) {
-            return `Today, ${time}`
+            return `${translations.today[language]}, ${time}`
         }
 
         const yesterday = new Date()
@@ -45,7 +47,7 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
             (sendDate.getMonth() === yesterday.getMonth()) &&
             (sendDate.getFullYear() === yesterday.getFullYear());
         if (isYesterday) {
-            return `Yesterday, ${time}`
+            return `${translations.yesterday[language]}, ${time}`
         }
 
         const date = `${sendDate.getDate()}.${sendDate.getMonth() + 1}`;
@@ -81,7 +83,7 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
                 <ul className="delete-menu-container" style={{top: deleteMenu.y, left: deleteMenu.x}}>
                     <li className="delete-menu">
                         <button onClick={deleteMessage(message.id)}>
-                            <h5>Delete 🗑</h5>️
+                            <h5>{translations.delete[language]} 🗑</h5>️
                         </button>
                     </li>
                 </ul>

@@ -1,9 +1,13 @@
 import "./Login.css"
 import makeRequest from "../../logic/HttpRequests";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import { useNavigate } from "react-router-dom";
+import {useLanguage} from "../../providers/translations/LanguageProvider";
+import {translations} from "../../providers/translations/translations";
 
 function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessage }) {
+    const { language } = useLanguage();
+
     const navigate = useNavigate();
 
     const [errorMessage, setErrorMessage] = useState('');
@@ -67,24 +71,22 @@ function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessa
     }
 
 
-
-
     return (
         <div className="form-container">
-            <h2>Login</h2>
+            <h2>{translations.login[language]}</h2>
             <form onSubmit={loginUser}>
                 <input
                     value={username}
                     onChange={handleUsernameChange}
                     type="text"
-                    placeholder="Username"
+                    placeholder={translations.username[language]}
                     required
                 />
                 <input
                     value={password}
                     onChange={handlePasswordChange}
                     type="password"
-                    placeholder="Password"
+                    placeholder={translations.password[language]}
                     required
                 />
                 {errorMessage &&
@@ -96,13 +98,13 @@ function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessa
                 {successfulSignUpMessage &&
                     <div className="success-message" id="success-message">
                         <span className="error-icon">✅️</span>
-                        <span className="error-text">{successfulSignUpMessage}</span>
+                        <span className="error-text">{translations.successfulSignUpMessage[language]}</span>
                     </div>
                 }
-                <button type="submit">Login</button>
+                <button type="submit">{translations.login[language]}</button>
             </form>
             <div className="toggle">
-                <button onClick={onSwitch}>Don't have account? Sign up</button>
+                <button onClick={onSwitch}>{translations.dontHaveAccountMessage[language]}</button>
             </div>
         </div>
     );

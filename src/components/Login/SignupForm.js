@@ -2,8 +2,11 @@ import "./Login.css"
 import {useEffect, useState} from "react";
 import makeRequest from "../../logic/HttpRequests";
 import {useNavigate} from "react-router-dom";
+import {useLanguage} from "../../providers/translations/LanguageProvider";
+import {translations} from "../../providers/translations/translations";
 
 function SignupForm({ setLoading, setSuccessfulSignUpMessage, onSwitch, setFormType }) {
+    const { language } = useLanguage();
     const navigate = useNavigate();
 
     const [errorMessage, setErrorMessage] = useState('');
@@ -95,41 +98,41 @@ function SignupForm({ setLoading, setSuccessfulSignUpMessage, onSwitch, setFormT
 
     return (
         <div className="form-container">
-            <h2>Sign Up</h2>
+            <h2>{translations.signup[language]}</h2>
             <form onSubmit={signUpUser}>
                 <input
                     value={name}
                     onChange={handleNameChange}
                     type="text"
-                    placeholder="Name"
+                    placeholder={translations.name[language]}
                     required
                 />
                 <input
                     value={surname}
                     onChange={handleSurnameChange}
                     type="text"
-                    placeholder="Surname"
+                    placeholder={translations.surname[language]}
                     required
                 />
                 <input
                     value={username}
                     onChange={handleUsernameChange}
                     type="text"
-                    placeholder="Username"
+                    placeholder={translations.username[language]}
                     required
                 />
                 <input
                     value={password}
                     onChange={handlePasswordChange}
                     type="password"
-                    placeholder="Password"
+                    placeholder={translations.password[language]}
                     required
                 />
                 <input
                     value={repeatedPassword}
                     onChange={handleRepeatedPasswordChange}
                     type="password"
-                    placeholder="Repeat password"
+                    placeholder={translations.repeatPassword[language]}
                     required
                 />
                 {errorMessage &&
@@ -138,10 +141,10 @@ function SignupForm({ setLoading, setSuccessfulSignUpMessage, onSwitch, setFormT
                         <span className="error-text">{errorMessage}</span>
                     </div>
                 }
-                <button type="submit">Sign Up</button>
+                <button type="submit">{translations.signup[language]}</button>
             </form>
             <div className="toggle">
-                <button onClick={onSwitch}>Already have an account? Login</button>
+                <button onClick={onSwitch}>{translations.alreadyHaveAccountMessage[language]}</button>
             </div>
         </div>
     );
