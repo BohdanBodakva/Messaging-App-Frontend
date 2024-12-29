@@ -3,15 +3,18 @@ import "./AddGroup.css";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
 import back_button_svg from "../../images/back_button.svg";
-import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 import FoundUserItem from "../Chats/FoundUserItem";
 import makeRequest from "../../logic/HttpRequests";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
+import UserCard from "../UserCard/UserCard";
+import group_svg from "../../images/group.svg";
 
 function AddGroup({ currentUser, setCurrentUser, onBack }) {
     const { language } = useLanguage();
 
     const[loading, setLoading] = useState(true);
+
+    const [selectedPhoto, setSelectedPhoto] = useState(null);
 
     const [foundUsersInput, setFoundUsersInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
@@ -80,11 +83,12 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
                                 <div
                                     className={`group-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
                                 >
-                                    <div className="group-photo-image">
+                                    <div className={
+                                        `group-photo-image 
+                                        ${!selectedPhoto ? "black-border" : ""}`
+                                    }>
                                         <img
-                                            src={currentUser.profile_photo_link ?
-                                                currentUser.profile_photo_link :
-                                                getDefaultProfilePhotoLink(currentUser.name)}
+                                            src={selectedPhoto ? selectedPhoto : group_svg}
                                             alt="User"
                                         />
                                     </div>
@@ -107,68 +111,62 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
                                 </div>
                                 <div className="search-users message-input message-input-add-group">
                                     <div className="message-input-group-block increased-height">
-                                        <div className="found-users-input-group-block">
-                                            <input
-                                                type="text"
-                                                value={foundUsersInput}
-                                                onChange={searchUsers}
-                                                placeholder={`🔍 ${translations.addUsers[language]}...`}
-                                            />
-                                            {foundUsersInput ? (
-                                                <div className="clear-input-btn">
-                                                    <button className="clear-btn" onClick={clearFoundUsersInput}>×
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="clear-input-btn">
-
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div
-                                            className={
-                                                `found-group-users scrollable 
-                                            ${foundUsersInput ? "found-users-border" : "hide-search"}`
-                                            }
-                                        >
-                                            {foundUsersInput && (
-                                                <div>
-                                                    {foundUsers.length === 0 && (
-                                                        <div className="no-users-found">
-                                                            <p>{translations.noUsersFound[language]}</p>
+                                        <div className="centered">
+                                            <div className="found-users-input-group-block">
+                                                <div className="users-input">
+                                                    <input
+                                                        type="text"
+                                                        value={foundUsersInput}
+                                                        onChange={searchUsers}
+                                                        placeholder={`🔍 ${translations.addUsers[language]}...`}
+                                                    />
+                                                    {foundUsersInput && (
+                                                        <div className="clear-input-btn">
+                                                            <button className="clear-btn"
+                                                                    onClick={clearFoundUsersInput}>×
+                                                            </button>
                                                         </div>
-                                                    )
-                                                    }
-
-                                                    {foundUsers.length > 0 && foundUsers.map((user) => (
-                                                        <FoundUserItem
-                                                            key={user.id}
-                                                            user={user}
-                                                            onClick={() => {
-                                                            }}
-                                                            onAddUser={addUserToGroup}
-                                                        />
-                                                    ))
-                                                    }
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
+                                            <div
+                                                className={
+                                                    `found-group-users scrollable 
+                                                    ${foundUsersInput ? "found-users-border" : "hide-search"}`
+                                                }
+                                            >
+                                                {foundUsersInput && (
+                                                    <div className="centr">
+                                                        {foundUsers.length === 0 && (
+                                                            <div className="no-users-found">
+                                                                <p>{translations.noUsersFound[language]}</p>
+                                                            </div>
+                                                        )
+                                                        }
+
+                                                        {foundUsers.length > 0 && foundUsers.map((user) => (
+                                                            <FoundUserItem
+                                                                key={user.id}
+                                                                user={user}
+                                                                onClick={() => {
+                                                                }}
+                                                                onAddUser={addUserToGroup}
+                                                            />
+                                                        ))
+                                                        }
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <p className="added-users-text">
-                                            Added users ({groupUsers.length}):
+                                            {translations.addedUsers[language]} ({groupUsers.length}):
                                         </p>
-                                        <div
-                                            className={
-                                                `found-group-users scrollable 
-                                            ${groupUsers ? "found-users-border" : ""}`
-                                            }
-                                        >
+                                        <div className="added-found-group-users scrollable">
                                             {groupUsers.length > 0 && groupUsers.map((user) => (
-                                                <FoundUserItem
+                                                <UserCard
                                                     key={user.id}
                                                     user={user}
-                                                    onClick={() => {
-                                                    }}
-                                                    onRemoveUser={removeUserFromGroup}
+                                                    onRemove={removeUserFromGroup}
                                                 />
                                             ))
                                             }

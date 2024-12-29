@@ -144,7 +144,7 @@ function Profile({ currentUser, setCurrentUser, onBack }) {
                                     </label>
                                     <label>
                                         <p>{translations.username[language]}</p>
-                                        <input
+                                        @ <input
                                             type="text"
                                             value={usernameInput}
                                             onChange={(e) => handleInputChange("username", e.target.value)}

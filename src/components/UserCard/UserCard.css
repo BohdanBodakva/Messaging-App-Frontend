@@ -1,0 +1,32 @@
+.user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 65px;
+    /*padding: 30px;*/
+}
+
+.user-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.username {
+    margin-top: 4px;
+    font-size: 11px;
+    text-align: center;
+    color: #333;
+    width: 20px;
+}
+
+.remove-icon {
+    position: absolute;
+    top: -8px;
+    right: 4px;
+    font-size: 20px;
+    color: red;
+    cursor: pointer;
+}

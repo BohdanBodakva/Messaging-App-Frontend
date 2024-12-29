@@ -47,6 +47,10 @@ export const translations = {
         en: "online",
         ua: "онлайн"
     },
+    addedUsers: {
+        en: "Added users",
+        ua: "Додані користувачі"
+    },
     newGroup:{
         en: "New group",
         ua: "Нова група"

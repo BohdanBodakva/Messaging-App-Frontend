@@ -36,6 +36,7 @@
 
 .group-photo-image img {
     margin-bottom: 5px !important;
+    padding: 10px;
 }
 
 .message-input-group-block {
@@ -50,11 +51,25 @@
     width: 95%;
 }
 
-.found-users-input-group-block {
+.centr {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+}
 
+.found-users-input-group-block {
     display: flex;
     flex-direction: row;
+    justify-content: center;
     margin-bottom: 10px;
+    width: 100%;
+}
+
+.users-input {
+    display: flex;
+    justify-content: center;
+    width: 70%;
 }
 
 .found-users-input-group-block button {
@@ -67,6 +82,7 @@
     height: 100%;
     display: flex;
     align-items: center;
+    margin-top: 15px;
 }
 
 .central-block {
@@ -460,9 +476,17 @@
     max-height: 0 !important;
 }
 
+.centered {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+}
+
 .found-group-users {
     display: flex;
     flex-direction: column;
+    overflow-x : hidden;
     overflow-y: auto;
     flex-grow: 1;
     max-height: 80px;
@@ -474,8 +498,26 @@
     }
 }
 
+.added-found-group-users {
+    overflow-x : auto;
+    overflow-y: auto;
+    flex-grow: 1;
+    max-height: 80px;
+    width: 90%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+@media only screen and (max-width: 890px) {
+    .added-found-group-users {
+        max-height: 115px;
+    }
+}
+
 .found-users-border {
-    border: 1px solid #ccc;
+    border: 2px solid #7e7e7e;
     border-radius: 8px;
 }
 
