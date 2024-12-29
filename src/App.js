@@ -18,7 +18,7 @@ function App() {
                 <Routes>
                     <Route index element={<Chats currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
                     <Route path="/login" element={<Login setCurrentUser={setCurrentUser} />} />
-                    {/*<Route path="/profile" element={<Profile currentUser={currentUser} setCurrentUser={setCurrentUser} />} />*/}
+                    {/*<Route path="/profile" element={<AddGroup currentUser={currentUser} setCurrentUser={setCurrentUser} />} />*/}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </LanguageProvider>

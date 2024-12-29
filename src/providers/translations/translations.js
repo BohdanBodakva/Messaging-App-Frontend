@@ -11,6 +11,10 @@ export const translations = {
         en: "Change language",
         ua: "Змінити мову"
     },
+    addUsers: {
+        en: "Add users",
+        ua: "Додати користувачів"
+    },
     dontHaveAccountMessage: {
         en: "Don't have account? Sign up",
         ua: "Не маєте акаунту? Зареєструватися"
@@ -46,6 +50,14 @@ export const translations = {
     newGroup:{
         en: "New group",
         ua: "Нова група"
+    },
+    newGroupName: {
+        en: "Enter group name",
+        ua: "Ввудіть назву групи"
+    },
+    createGroup: {
+        en: "Create group",
+        ua: "Створити групу"
     },
     today:{
         en: "Today",
@@ -136,7 +148,7 @@ export const translations = {
         ua: "Вийти"
     },
     confirmLogout: {
-        en: "Are you sure you want to logout?",
+        en: "Are you sure you want to sign out?",
         ua: "Ви справді хочете вийти?"
     },
     confirm: {

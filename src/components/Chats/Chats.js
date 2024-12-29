@@ -9,6 +9,7 @@ import FoundUserItem from "./FoundUserItem";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
 import Profile from "../Profile/Profile";
+import AddGroup from "../AddGroup/AddGroup";
 
 function Chats ({ currentUser = null, setCurrentUser }) {
     const { language } = useLanguage();
@@ -16,6 +17,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     const navigate = useNavigate();
 
     const[isUserProfileDisplayed, setIsUserProfileDisplayed] = useState(false);
+    const[isAddGroupDisplayed, setIsAddGroupDisplayed] = useState(false);
 
     const [foundUsersInput, setFoundUsersInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
@@ -117,6 +119,14 @@ function Chats ({ currentUser = null, setCurrentUser }) {
         setIsUserProfileDisplayed(false);
     }
 
+    function displayAddGroupWindow () {
+        setIsAddGroupDisplayed(true);
+    }
+
+    function closeAddGroupWindow () {
+        setIsAddGroupDisplayed(false);
+    }
+
     return (
         <div className="main-app-block" style={{position: "relative"}}>
             {isUserProfileDisplayed && (
@@ -128,12 +138,27 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                     />
                 </div>
             )}
+
+            {isAddGroupDisplayed && (
+                <div className="displayed-user-profile">
+                    <AddGroup
+                        currentUser={currentUser}
+                        setCurrentUser={setCurrentUser}
+                        onBack={closeAddGroupWindow}
+                    />
+                </div>
+            )}
+
             <div className={`app ${isUserProfileDisplayed ? "blurred" : ""}`}>
                 <div className={`chats-bar ${selectedChat ? "chat-is-selected" : ""}`}>
                     <div className="pinned-user-bar">
                         <div className="current-user-block">
                             {currentUser &&
-                                <CurrentUser displayUserProfile={setIsUserProfileDisplayed} user={currentUser}/>}
+                                <CurrentUser
+                                    displayUserProfile={setIsUserProfileDisplayed}
+                                    user={currentUser}
+                                />
+                            }
                         </div>
                         <div className="search-users message-input">
                             <div className="message-input-block">
@@ -146,11 +171,13 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                                     />
                                     {foundUsersInput ? (
                                         <div className="clear-input-btn">
-                                            <button onClick={clearFoundUsersInput}>❌</button>
+                                            <button className="clear-btn" onClick={clearFoundUsersInput}>×</button>
                                         </div>
                                     ) : (
                                         <div className="clear-input-btn">
-                                            <button onClick={createGroup}>{translations.newGroup[language]}</button>
+                                            <button onClick={displayAddGroupWindow}>
+                                                {translations.newGroup[language]}
+                                            </button>
                                         </div>
                                     )}
                                 </div>

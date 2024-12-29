@@ -135,19 +135,20 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                     )
                 })}
             </div>
+            <div className="margin-block"></div>
             {previewFiles.length > 0 &&
                 <div className="preview scrollable">
                     <PreviewFiles files={previewFiles}/>
                 </div>
             }
             <div className="message-input">
-                <textarea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={`${translations.enterMessage[language]}...`}
-                    rows="4"
-                    cols="50">
-                </textarea>
+            <textarea
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder={`${translations.enterMessage[language]}...`}
+                rows="4"
+                cols="50">
+            </textarea>
                 <input type="file" id="file" className="file-input" onChange={handleFileChange} multiple/>
                 <label htmlFor="file" className="file-label">
                     <span className="file-icon">📁</span>
