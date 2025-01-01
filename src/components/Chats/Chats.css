@@ -136,6 +136,20 @@
     background: #bbb;
 }
 
+.point-size {
+    width: 10px;
+    height: 10px;
+}
+
+.status {
+    display: flex;
+    flex-direction: row;
+}
+
+.user-status {
+    margin: 0 0 0 5px;
+}
+
 .chat-item {
     display: flex;
     align-items: center;
@@ -171,6 +185,10 @@
 
 .chat-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
 }
 
 .chat-info h4 {
@@ -553,7 +571,6 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     text-align: center;
-    margin-bottom: 10px;
 }
 
 .file-label:hover {
@@ -563,6 +580,12 @@
 
 .file-icon {
     font-size: 10px;
+}
+
+.file-icon img {
+    font-size: 10px;
+    width: 30px;
+    height: 30px;
 }
 
 .scrollable {
@@ -638,9 +661,38 @@
     border-bottom: 1px solid #a8a8a8;
 }
 
+.green-point {
+    width: 100%;
+    height: 100%;
+    background-color: #00a600;
+    border-radius: 50%;
+    display: inline-block;
+}
+
 .chat-info-header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    margin-bottom: 7px;
+}
+
+.chat-info-header h4 {
+    margin: 0;
+}
+
+.chat-info-header p {
+    margin: 0 0 0 5px;
+}
+
+.chat-info-header-img-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-info-header img {
+    height: 20px;
+    width: 25px;
+    margin-left: 2px;
 }
 
 .button-container {
@@ -675,4 +727,18 @@
 
 .btn:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-right-part {
+    width: fit-content;
+    max-width: 30%;
+    border: 1px solid #ddd;
+}
+
+.ellipsis-block {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 5px;
+    box-sizing: border-box;
 }

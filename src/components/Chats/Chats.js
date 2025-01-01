@@ -4,12 +4,16 @@ import ChatItem from "./ChatItem";
 import ChatArea from "./ChatArea";
 import CurrentUser from "./CurrentUser";
 import {useNavigate} from "react-router-dom";
-import makeRequest from "../../logic/HttpRequests";
+import makeRequest, {refreshAccessToken} from "../../logic/HttpRequests";
 import FoundUserItem from "./FoundUserItem";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
 import Profile from "../Profile/Profile";
 import AddGroup from "../AddGroup/AddGroup";
+import {socket} from "../../logic/WebSocket";
+import {User} from "../../models/User";
+import {Chat} from "../../models/Chat";
+import {Message} from "../../models/Message";
 
 function Chats ({ currentUser = null, setCurrentUser }) {
     const { language } = useLanguage();
@@ -37,8 +41,8 @@ function Chats ({ currentUser = null, setCurrentUser }) {
         try {
             const response = await makeRequest("GET", url);
 
-            setSelectedChat(response.data.chat);
-            setMessageList(response.data.chat.messages);
+            setSelectedChat(response.response.data.chat);
+            setMessageList(response.response.data.chat.messages);
         } catch (error) {
 
         }
@@ -48,41 +52,132 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     }
 
     useEffect(() => {
-        if (!currentUser){
-            setLoading(true);
-
-            const currentUserId = localStorage.getItem("current_user_id");
-
-            if (currentUserId) {
-                async function loadCurrentUser() {
-                    const url = `/users/${currentUserId}`;
-
-                    let response;
-                    try {
-                        response = await makeRequest("GET", url);
-
-                        setChats(response.data.user.chats);
-                    } catch (error) {
-                        navigate("/login");
-                    }
-                    setLoading(false);
-                    setCurrentUser(response.data.user);
-                }
-                loadCurrentUser();
-            } else {
-                setLoading(false);
-                navigate("/login");
-            }
-        } else {
-            setChats(currentUser.chats);
-        }
+        // if (!currentUser){
+        //     setLoading(true);
+        //
+        //     async function loadCurrentUser() {
+        //         const url = `/users/current-user`;
+        //
+        //         const response = await makeRequest("GET", url);
+        //
+        //         if (response.errorMessage) {
+        //             navigate("/login");
+        //         } else {
+        //             const currentUser = User.fromJson(response.response.data.user)
+        //             setCurrentUser(currentUser);
+        //         }
+        //
+        //         setLoading(false);
+        //     }
+        //     loadCurrentUser();
+        //
+        // } else {
+        //
+        // }
 
         // WEBSOCKET CONNECTION
+        setLoading(true);
 
+        socket.connect();
 
+        socket.on("load_user", (data) => {
+            console.log(data);
 
+            const user = new User(data.user);
+            setCurrentUser(user);
 
+            const chats = currentUser.chats;
+            const chatList = [];
+            chats.forEach((chat) => {
+                const chatObject = new Chat(chat);
 
+                const messages = chatObject.messages;
+                const messageList = [];
+
+                messages.forEach((message) => {
+                    const messageObject = new Message(message);
+                    messageList.push(messageObject);
+                })
+                chatObject.messages = messageList;
+
+                chatList.push(chatObject);
+            })
+
+            setChats(chatList);
+        })
+
+        socket.on("load_user_error", (data) => {
+            console.log(data);
+        })
+
+        socket.on("validate_refreshed_token", (data) => {
+            console.log(data);
+
+            const user_id = data.user_id;
+
+            socket.emit(
+                "load_user",
+                {
+                    "user_id": user_id,
+                    "load_messages": true
+                }
+            )
+        })
+
+        socket.on("validate_refreshed_token_error", (data) => {
+            console.log(data);
+            socket.disconnect();
+        })
+
+        socket.on("validate_token", (data) => {
+            console.log(data);
+
+            const user_id = data.user_id;
+
+            socket.emit(
+                "load_user",
+                {
+                    "user_id": user_id,
+                    "load_messages": true
+                }
+            )
+        })
+
+        socket.on("validate_token_error", (data) => {
+            console.log("Token validation failed: ", data);
+
+            if (data.error.includes("Signature has expired")) {
+                // refresh access_token
+                console.log("let's go and refresh");
+                let newAccessToken = null;
+                (async function() {
+                    newAccessToken = await refreshAccessToken();
+
+                    socket.emit(
+                        "validate_refreshed_token",
+                        {"access_token": newAccessToken}
+                    );
+                })();
+            } else {
+                socket.disconnect();
+            }
+        })
+
+        socket.emit(
+            "validate_token",
+            {"access_token": localStorage.getItem("access_token")}
+        );
+
+        setLoading(false);
+
+        return () => {
+            socket.off("validate_token");
+            socket.off("validate_token_error");
+            socket.off("validate_refreshed_token");
+            socket.off("validate_refreshed_token_error");
+
+            socket.disconnect();
+        };
     }, []);
 
     async function searchUsers(event) {
@@ -94,7 +189,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
             const url = `/users/username/contains/${text}`;
             const response = await makeRequest("GET", url);
 
-            setFoundUsers(response.data.users)
+            setFoundUsers(response.response.data.users)
         } else {
             setFoundUsers([])
         }
@@ -120,8 +215,17 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     }
 
     function displayAddGroupWindow () {
-        setIsAddGroupDisplayed(true);
+        // setIsAddGroupDisplayed(true);
+
+
+
+        socket.emit(
+            "validate_token",
+            {"access_token": localStorage.getItem("access_token")}
+        );
     }
+
+
 
     function closeAddGroupWindow () {
         setIsAddGroupDisplayed(false);

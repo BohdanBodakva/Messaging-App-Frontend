@@ -45,7 +45,7 @@ export const translations = {
     },
     online: {
         en: "online",
-        ua: "онлайн"
+        ua: "у мережі"
     },
     addedUsers: {
         en: "Added users",
@@ -80,8 +80,8 @@ export const translations = {
         ua: "Не знайдено користувачів"
     },
     lastSeenAt: {
-        en: "Last seen at",
-        ua: "Востаннє у мережі о"
+        en: "last seen at",
+        ua: "востаннє у мережі о"
     },
     selectChatToStartMessaging: {
         en: "Select a chat to start messaging",

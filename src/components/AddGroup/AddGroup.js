@@ -31,7 +31,7 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
             const url = `/users/username/contains/${text}`;
             const response = await makeRequest("GET", url);
 
-            setFoundUsers(response.data.users)
+            setFoundUsers(response.response.data.users)
         } else {
             setFoundUsers([])
         }
@@ -49,7 +49,7 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
     }
 
     function addUserToGroup(user) {
-        if (user && !groupUsers.includes(user)) {
+        if (user && groupUsers.filter((u) => u.id === user.id).length === 0) {
             setGroupUsers((arr) => [...arr, user]);
         }
     }
@@ -59,7 +59,7 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
     }
 
     return (
-        <div className="central-block">'
+        <div className="central-block">
             {loading && (
                 <LoadingSpinner />
             )}

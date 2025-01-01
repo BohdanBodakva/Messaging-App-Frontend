@@ -42,7 +42,14 @@ function Profile({ currentUser, setCurrentUser, onBack }) {
 
     const handleInputChange = (field, value) => {
         if (field === "name") {
-            setNameInput(value);
+            const firstSymbol = value.charAt(0);
+            if (value === "") {
+                setNameInput(value);
+                setSelectedPhoto(getDefaultProfilePhotoLink("user"));
+            } else if (firstSymbol.match(/[a-z]/i)) {
+                setNameInput(value);
+                setSelectedPhoto(getDefaultProfilePhotoLink(value));
+            }
         } else if (field === "surname") {
             setSurnameInput(value);
         } else if (field === "username") {
@@ -112,7 +119,7 @@ function Profile({ currentUser, setCurrentUser, onBack }) {
                                         <img
                                             src={currentUser.profile_photo_link ?
                                                 currentUser.profile_photo_link :
-                                                getDefaultProfilePhotoLink(currentUser.name)}
+                                                selectedPhoto}
                                             alt="User"
                                         />
                                     </div>
@@ -209,8 +216,8 @@ function ConfirmSignOut({ onClose }) {
     const navigate = useNavigate();
 
     function signOut() {
-        localStorage.removeItem("token");
-        localStorage.removeItem("current_user_id");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
 
         navigate("/login");
     }

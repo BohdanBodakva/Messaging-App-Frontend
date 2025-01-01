@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import './Chats.css';
 import back_button_svg from "../../images/back_button.svg";
 import group_svg from "../../images/group.svg";
+import clip_svg from "../../images/clip.svg";
 import Message from "./Message";
 import PreviewFiles from "./PreviewFiles";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
@@ -26,12 +27,12 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
     const chatUsers = chat.users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
 
-    const isGroup = otherUsers.length > 2;
+    const isGroup = chat.is_group
 
     let chatPhoto = getDefaultProfilePhotoLink(currentUser.name)
     let chatName;
     if (isGroup) {
-        chatName = chat.name;
+        chatName = chat.name ? chat.name : translations.newGroup[language];
         const groupPhoto = chat.chat_photo_link
         if (!groupPhoto) {
             chatPhoto = group_svg
@@ -41,7 +42,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
     } else {
         const secondUser = otherUsers[0]
 
-        chatName = secondUser.name
+        chatName = `${secondUser.name} ${secondUser.surname}`
         if (secondUser.profile_photo_link) {
             chatPhoto = secondUser.profile_photo_link
         }
@@ -115,7 +116,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                     if (!sendByCurrentUser) {
                         const user = otherUsers.filter((otherUser) => otherUser.id === message.user_id)[0];
                         if (user) {
-                            senderName = user.name;
+                            senderName = `${user.name} ${user.surname}`;
                             const userPhoto = user.profile_photo_link
                             if (userPhoto){
                                 senderPhoto = userPhoto
@@ -151,7 +152,9 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
             </textarea>
                 <input type="file" id="file" className="file-input" onChange={handleFileChange} multiple/>
                 <label htmlFor="file" className="file-label">
-                    <span className="file-icon">📁</span>
+                    <span className="file-icon">
+                        <img src={clip_svg} alt="clip-icon"/>
+                    </span>
                 </label>
                 <button onClick={sendMessage}>
                     {translations.send[language]}

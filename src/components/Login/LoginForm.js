@@ -4,6 +4,7 @@ import {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
+import {User} from "../../models/User";
 
 function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessage }) {
     const { language } = useLanguage();
@@ -23,46 +24,44 @@ function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessa
         setPassword(event.target.value);
     };
 
-
     async function loginUser(event){
         event.preventDefault();
         setErrorMessage('');
 
+        setLoading(true);
+
         // LOGIN
         const loginUrl = "/auth/login"
-
         const body = {
             "username": username,
             "password": password,
         }
 
-        setLoading(true);
+        const loginResponse = await makeRequest("POST", loginUrl, body);
 
-        let loginResponse;
-        try{
-            loginResponse = await makeRequest("POST", loginUrl, body);
+        if (loginResponse.errorMessage) {
+            setErrorMessage(loginResponse.errorMessage);
+        } else {
+            const accessToken = loginResponse.response.data.access_token;
+            const refreshToken = loginResponse.response.data.refresh_token;
+            localStorage.setItem("access_token", accessToken);
+            localStorage.setItem("refresh_token", refreshToken);
 
-            const token = loginResponse.data.token;
-            const currentUserId = loginResponse.data.current_user_id;
-            localStorage.setItem("token", token);
-            localStorage.setItem("current_user_id", currentUserId);
+            // Get current user
+            const url = `/users/current-user`
 
-            // GET CURRENT USER
-            const url = `/users/${currentUserId}`
+            const getUserResponse = await makeRequest("GET", url);
 
-            let getUserResponse;
-            try{
-                getUserResponse = await makeRequest("GET", url, null);
+            if (getUserResponse.errorMessage) {
+              setErrorMessage(getUserResponse.errorMessage);
+            } else {
+                setErrorMessage("");
 
-                const currentUser = getUserResponse.data.user;
+                const currentUser = User.fromJson(getUserResponse.response.data.user)
                 setCurrentUser(currentUser);
 
                 navigate("/");
-            } catch (error) {
-                setErrorMessage(error.message);
             }
-        } catch (error) {
-            setErrorMessage(error.message);
         }
 
         setLoading(false);

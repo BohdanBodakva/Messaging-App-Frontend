@@ -70,18 +70,17 @@ function SignupForm({ setLoading, setSuccessfulSignUpMessage, onSwitch, setFormT
 
         setLoading(true);
 
-        let loginResponse;
-        try{
-            loginResponse = await makeRequest("POST", signUpUrl, body);
+        const loginResponse = await makeRequest("POST", signUpUrl, body);
 
-            if (loginResponse.status === 201){
+        if (loginResponse.errorMessage){
+            setErrorMessage(loginResponse.errorMessage)
+        } else {
+            if (loginResponse.response.status === 201){
                 setSuccessfulSignUpMessage("User is registered successfully. Please log in.");
                 setFormType("login");
             } else {
-                setErrorMessage(loginResponse.data.msg);
+                setErrorMessage(loginResponse.response.data.msg);
             }
-        } catch (error) {
-            setErrorMessage(error.message);
         }
 
         setLoading(false);

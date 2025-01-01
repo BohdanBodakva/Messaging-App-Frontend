@@ -15,7 +15,7 @@ function CurrentUser ({ user, displayUserProfile }) {
                 className={`user-photo ${user.profile_photo_link ? "black-border" : ""}`}
             />
             <div className="user-info">
-                <h4>{user.name}</h4>
+                <h4>{user.name} {user.surname}</h4>
                 <p>online</p>
             </div>
             <button className="settings-button" onClick={displayUserProfile}>
