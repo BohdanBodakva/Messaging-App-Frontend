@@ -112,14 +112,10 @@ function Profile({ currentUser, setCurrentUser, onBack }) {
                                         </button>
                                     </div>
                                 </div>
-                                <div
-                                    className={`profile-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
-                                >
+                                <div className="profile-photo">
                                     <div className="profile-photo-image">
                                         <img
-                                            src={currentUser.profile_photo_link ?
-                                                currentUser.profile_photo_link :
-                                                selectedPhoto}
+                                            src={currentUser.profilePhotoLink}
                                             alt="User"
                                         />
                                     </div>

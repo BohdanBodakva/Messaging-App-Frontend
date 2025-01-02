@@ -1,4 +1,6 @@
 import getDefaultProfilePhotoLink from "../constants/defaultPhotoLinks";
+import {Chat} from "./Chat";
+import {Message} from "./Message";
 
 export class User {
     constructor({
@@ -6,7 +8,6 @@ export class User {
                     name,
                     surname = "",
                     username,
-                    password,
                     profilePhotoLink = null,
                     lastSeen = null,
                     chats = [],
@@ -16,19 +17,10 @@ export class User {
         this.name = name;
         this.surname = surname;
         this.username = username;
-        this._password = password;
-        this._profilePhotoLink = profilePhotoLink ? profilePhotoLink : getDefaultProfilePhotoLink(this.name);
+        this._profilePhotoLink = profilePhotoLink ? profilePhotoLink : getDefaultProfilePhotoLink(name);
         this.lastSeen = lastSeen;
         this.chats = chats;
         this.unreadMessages = unreadMessages;
-    }
-
-    get password() {
-        return this._password;
-    }
-
-    set password(password) {
-        this._password = password;
     }
 
     get profilePhotoLink() {
@@ -44,6 +36,14 @@ export class User {
     }
 
     static fromJson(json) {
+        let chats = json.chats ? json.chats.map(c => {
+            return Chat.fromJson(c);
+        }) : [];
+
+        let unreadMessages = json.unread_messages ? json.unread_messages.map(c => {
+            return Message.fromJson(c);
+        }) : [];
+
         return new User({
             id: json.id,
             name: json.name,
@@ -52,8 +52,8 @@ export class User {
             password: json.password,
             profilePhotoLink: json.profile_photo_link,
             lastSeen: json.last_seen,
-            chats: json.chats,
-            unreadMessages: json.unread_messages,
+            chats: chats,
+            unreadMessages: unreadMessages,
         })
     }
 

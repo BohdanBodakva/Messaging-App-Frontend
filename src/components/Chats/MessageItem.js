@@ -5,7 +5,7 @@ import {translations} from "../../providers/translations/translations";
 import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 import {getFormattedDate} from "../../constants/formattedDate";
 
-function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto }) {
+function MessageItem ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto }) {
     const { language } = useLanguage();
 
     const [deleteMenu, setDeleteMenu] = useState(null);
@@ -36,9 +36,9 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
 
     return (
         <div onClick={handleClick} className={`message ${sendByCurrentUser ? "sent" : "received"}`}>
-            {(!sendByCurrentUser && !isGroup) && (
+            {!sendByCurrentUser && (
                 <img
-                    src={senderPhoto ? senderPhoto : getDefaultProfilePhotoLink(senderName)}
+                    src={senderPhoto}
                     alt={message.id}
                     className={`message-photo ${senderPhoto ? "black-border" : ""}`}
                 />
@@ -48,7 +48,7 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
                 <pre><p>{message.text}</p></pre>
                 <span
                     className={`message-time ${sendByCurrentUser ? "sent-time" : ""}`}>
-                    {getFormattedDate(message.send_at, language)}
+                    {getFormattedDate(message.sendAt, language)}
                 </span>
             </div>
 
@@ -66,4 +66,4 @@ function Message ({ isGroup, message, sendByCurrentUser, senderName, senderPhoto
 }
 
 
-export default Message;
+export default MessageItem;

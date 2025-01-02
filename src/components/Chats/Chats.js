@@ -12,10 +12,11 @@ import Profile from "../Profile/Profile";
 import AddGroup from "../AddGroup/AddGroup";
 import {socket} from "../../logic/WebSocket";
 import {User} from "../../models/User";
-import {Chat} from "../../models/Chat";
 import {Message} from "../../models/Message";
 
-function Chats ({ currentUser = null, setCurrentUser }) {
+const loadedHistoryItemsCount = 6;
+
+function Chats ({ currentUser, setCurrentUser }) {
     const { language } = useLanguage();
 
     const navigate = useNavigate();
@@ -26,88 +27,103 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     const [foundUsersInput, setFoundUsersInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
 
-    const [messageList, setMessageList] = useState([]);
+    const [currentChatHistory, setCurrentChatHistory] = useState([]);
 
     const [loading, setLoading] = useState(false);
 
-    const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
 
-    async function selectChat(chat_id) {
-        setLoading(true);
+    function selectChat(chat_id) {
+        setCurrentChatHistory([]);
 
-        const url = `/chats/${chat_id}`;
+        const chat = currentUser.chats.filter((c) => c.id === chat_id)[0];
 
-        try {
-            const response = await makeRequest("GET", url);
+        if (chat && (selectedChat ? selectedChat.id !== chat.id : true)) {
+            setSelectedChat(chat);
 
-            setSelectedChat(response.response.data.chat);
-            setMessageList(response.response.data.chat.messages);
-        } catch (error) {
+            console.log("selected chat___: ", selectedChat);
 
+            socket.emit(
+                "load_chat_history",
+                {
+                    "chat_id": chat_id,
+                    "items_count": loadedHistoryItemsCount,
+                    "offset": 0
+                }
+            )
         }
 
-        setLoading(false);
 
     }
 
-    useEffect(() => {
-        // if (!currentUser){
-        //     setLoading(true);
-        //
-        //     async function loadCurrentUser() {
-        //         const url = `/users/current-user`;
-        //
-        //         const response = await makeRequest("GET", url);
-        //
-        //         if (response.errorMessage) {
-        //             navigate("/login");
-        //         } else {
-        //             const currentUser = User.fromJson(response.response.data.user)
-        //             setCurrentUser(currentUser);
-        //         }
-        //
-        //         setLoading(false);
-        //     }
-        //     loadCurrentUser();
-        //
-        // } else {
-        //
-        // }
+    // const [socketConnection, setSocketConnection] = useState(null);
 
-        // WEBSOCKET CONNECTION
+    useEffect(() => {
         setLoading(true);
 
-        socket.connect();
+        const accessToken = localStorage.getItem("access_token");
+        const refreshToken = localStorage.getItem("refresh_token");
+
+        if (!accessToken || !refreshToken) {
+            navigate("/login");
+            return;
+        }
+
+        // WEBSOCKET CONNECTION
+        // const socket = io(webSocketBackendUrl, {
+        //     transports: ['websocket'],
+        // });
+        //
+        // setSocketConnection(socket);
+
+
+
+        // =============================================================================
+
+
+
+        socket.on("join_room", (data) => {
+            const room = data.room;
+        })
 
         socket.on("load_user", (data) => {
-            console.log(data);
+            const userJson = data.user;
+            const user = User.fromJson(userJson);
 
-            const user = new User(data.user);
             setCurrentUser(user);
 
-            const chats = currentUser.chats;
-            const chatList = [];
-            chats.forEach((chat) => {
-                const chatObject = new Chat(chat);
-
-                const messages = chatObject.messages;
-                const messageList = [];
-
-                messages.forEach((message) => {
-                    const messageObject = new Message(message);
-                    messageList.push(messageObject);
-                })
-                chatObject.messages = messageList;
-
-                chatList.push(chatObject);
+            user.chats.forEach((c) => {
+                socket.emit(
+                    "join_room",
+                    {
+                        "room": c.id,
+                    }
+                )
             })
 
-            setChats(chatList);
+
         })
 
         socket.on("load_user_error", (data) => {
             console.log(data);
+            socket.disconnect();
+            navigate("/login");
+        })
+
+        socket.on("load_chat_history", (data) => {
+
+            const chatId = Number(data.chat_id);
+            const messages = data.chat_history ?
+                data.chat_history.map(m => Message.fromJson(m)) : [];
+
+            // console.log("GGGGGGG: ", chatId, currentChatHistory[0].chatId)
+
+            // if (currentChatHistory.length !== 0 && chatId === currentChatHistory[0].chatId) {
+            //     setCurrentChatHistory(prevState => [...prevState, ...messages]);
+            // } else {
+            setCurrentChatHistory(prevState => [...messages, ...prevState]);
+            // }
+
         })
 
         socket.on("validate_refreshed_token", (data) => {
@@ -125,20 +141,27 @@ function Chats ({ currentUser = null, setCurrentUser }) {
         })
 
         socket.on("validate_refreshed_token_error", (data) => {
-            console.log(data);
+            currentUser.chats.forEach((c) => {
+                socket.emit(
+                    "leave_room",
+                    {
+                        "room": c.id,
+                    }
+                )
+            })
+
             socket.disconnect();
+            navigate("/login");
         })
 
         socket.on("validate_token", (data) => {
-            console.log(data);
-
             const user_id = data.user_id;
 
             socket.emit(
                 "load_user",
                 {
                     "user_id": user_id,
-                    "load_messages": true
+                    "load_messages": false
                 }
             )
         })
@@ -151,17 +174,44 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                 console.log("let's go and refresh");
                 let newAccessToken = null;
                 (async function() {
-                    newAccessToken = await refreshAccessToken();
+                    try {
+                        newAccessToken = await refreshAccessToken();
 
-                    socket.emit(
-                        "validate_refreshed_token",
-                        {"access_token": newAccessToken}
-                    );
+                        socket.emit(
+                            "validate_refreshed_token",
+                            {"access_token": newAccessToken}
+                        );
+                    } catch (error) {
+                        currentUser.chats.forEach((c) => {
+                            socket.emit(
+                                "leave_room",
+                                {
+                                    "room": c.id,
+                                }
+                            )
+                        })
+
+                        socket.disconnect();
+                        navigate("/login");
+                    }
                 })();
             } else {
+                currentUser.chats.forEach((c) => {
+                    socket.emit(
+                        "leave_room",
+                        {
+                            "room": c.id,
+                        }
+                    )
+                })
+
                 socket.disconnect();
+                navigate("/login");
             }
         })
+        // =============================================================================
+
+        socket.connect();
 
         socket.emit(
             "validate_token",
@@ -171,12 +221,9 @@ function Chats ({ currentUser = null, setCurrentUser }) {
         setLoading(false);
 
         return () => {
-            socket.off("validate_token");
-            socket.off("validate_token_error");
-            socket.off("validate_refreshed_token");
-            socket.off("validate_refreshed_token_error");
-
             socket.disconnect();
+            socket.close();
+            console.log("Socket disconnected from cleanup");
         };
     }, []);
 
@@ -215,17 +262,20 @@ function Chats ({ currentUser = null, setCurrentUser }) {
     }
 
     function displayAddGroupWindow () {
-        // setIsAddGroupDisplayed(true);
+        setIsAddGroupDisplayed(true);
 
 
 
-        socket.emit(
-            "validate_token",
-            {"access_token": localStorage.getItem("access_token")}
-        );
+        // socket.emit(
+        //     "validate_token",
+        //     {"access_token": localStorage.getItem("access_token")}
+        // );
     }
 
-
+    function closeChatArea() {
+        setSelectedChat(null);
+        setCurrentChatHistory([]);
+    }
 
     function closeAddGroupWindow () {
         setIsAddGroupDisplayed(false);
@@ -236,6 +286,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
             {isUserProfileDisplayed && (
                 <div className="displayed-user-profile">
                     <Profile
+                        socket={socket}
                         currentUser={currentUser}
                         setCurrentUser={setCurrentUser}
                         onBack={closeProfileWindow}
@@ -246,6 +297,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
             {isAddGroupDisplayed && (
                 <div className="displayed-user-profile">
                     <AddGroup
+                        socket={socket}
                         currentUser={currentUser}
                         setCurrentUser={setCurrentUser}
                         onBack={closeAddGroupWindow}
@@ -259,6 +311,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                         <div className="current-user-block">
                             {currentUser &&
                                 <CurrentUser
+                                    socket={socket}
                                     displayUserProfile={setIsUserProfileDisplayed}
                                     user={currentUser}
                                 />
@@ -295,7 +348,7 @@ function Chats ({ currentUser = null, setCurrentUser }) {
 
                                         {foundUsers.length > 0 && foundUsers.map((user) => (
                                             <FoundUserItem
-                                                key={user.id}
+                                                key={`found_user_${user.id}`}
                                                 user={user}
                                                 onClick={() => {
                                                 }}
@@ -306,27 +359,31 @@ function Chats ({ currentUser = null, setCurrentUser }) {
                             </div>
                         </div>
                     </div>
-                    <div className="scrollable">
-                        {chats.map((chat) => (
-                            <ChatItem
-                                key={chat.id}
-                                chat={chat}
-                                currentUser={currentUser}
-                                selectedChat={selectedChat}
-                                onClick={() => selectChat(chat.id)}
-                            />
-                        ))}
-                    </div>
+                    {currentUser && (
+                        <div className="scrollable">
+                            {currentUser.chats && currentUser.chats.map((chat) => (
+                                <ChatItem
+                                    socket={socket}
+                                    key={`chat_item_${chat.id}`}
+                                    chat={chat}
+                                    currentUser={currentUser}
+                                    selectedChat={selectedChat}
+                                    onClick={() => selectChat(chat.id)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
                 {selectedChat ? (
                     <div className="chat-area">
                         <ChatArea
-                            loading={loading}
+                            socket={socket}
                             chat={selectedChat}
                             currentUser={currentUser}
-                            messageList={messageList}
-                            setMessageList={setMessageList}
-                            onBack={() => setSelectedChat(null)}
+                            loadedHistoryItemsCount={loadedHistoryItemsCount}
+                            currentChatHistory={currentChatHistory}
+                            setCurrentChatHistory={setCurrentChatHistory}
+                            onBack={closeChatArea}
                         />
                     </div>
                 ) : (

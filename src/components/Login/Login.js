@@ -31,7 +31,6 @@ function Login({currentUser, setCurrentUser}) {
                     <LoginForm
                         loading={loading}
                         setLoading={setLoading}
-                        setCurrentUser={setCurrentUser}
                         successfulSignUpMessage={successfulSignUpMessage}
                         onSwitch={() => toggleForm("signup")}
                     /> :

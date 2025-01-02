@@ -1,26 +1,28 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import './Chats.css';
 import group_svg from "../../images/group.svg";
 import group2_svg from "../../images/group2.svg";
-import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
-import {translations as otherUser, translations} from "../../providers/translations/translations";
+import {translations} from "../../providers/translations/translations";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {getFormattedDate} from "../../constants/formattedDate";
 
 function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
     const {language} = useLanguage();
 
-    const chatUsers = chat.users;
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+    const currChat = currentUser.chats.filter((c) => c.id === chat.id)[0];
+    const chatUsers = currChat.users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
 
-    const isGroup = chat.is_group;
+    const isGroup = chat.isGroup;
 
-    let chatPhoto = getDefaultProfilePhotoLink(currentUser.name)
+    let chatPhoto = currentUser.profilePhotoLink;
     let chatName;
     let secondUser;
 
     if (isGroup) {
-        chatName = chat.name ? chat.name : translations.newGroup[language];
+        chatName = chat.name;
         const groupPhoto = chat.chat_photo_link
         if (!groupPhoto) {
             chatPhoto = group_svg
@@ -35,6 +37,13 @@ function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
             chatPhoto = secondUser.profile_photo_link
         }
     }
+
+    useEffect(() => {
+        const unreadMessagesCount = currentUser.unreadMessages && currentUser.unreadMessages
+            .filter((m) => m.chatId === chat.id);
+
+        setUnreadMessagesCount(unreadMessagesCount);
+    }, []);
 
     return (
         <div
@@ -69,10 +78,19 @@ function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
             <div className="message-right-part ellipsis-block">
                 {chat.messages.length > 0 && (
                     <div>
-                        <p>{chat.messages[chat.messages.length - 1].text}</p>
-                        <span className={`message-time}`}>
-                            {getFormattedDate(chat.messages[chat.messages.length - 1].send_at, language)}
-                        </span>
+                        <div className="last-chat-message">
+                            <p>{chat.messages[chat.messages.length - 1].text}</p>
+                            <span className={`message-time}`}>
+                                {getFormattedDate(chat.messages[chat.messages.length - 1].sendAt, language)}
+                            </span>
+                        </div>
+                        {
+                            currentUser.unreadMessages && currentUser.unreadMessages.filter((m) => m.usersThatUnread.includes(currentUser.id)) > 0 && (
+                                <div className="unread-messages">
+
+                                </div>
+                            )
+                        }
                     </div>
                 )}
             </div>

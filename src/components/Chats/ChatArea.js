@@ -1,19 +1,22 @@
 import React, {useEffect, useRef, useState} from "react";
 import './Chats.css';
 import back_button_svg from "../../images/back_button.svg";
-import group_svg from "../../images/group.svg";
 import clip_svg from "../../images/clip.svg";
-import Message from "./Message";
 import PreviewFiles from "./PreviewFiles";
-import LoadingSpinner from "../Spinner/LoadingSpinner";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
-import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
+import {Message} from "../../models/Message";
+import MessageItem from "./MessageItem";
+import type {User} from "../../models/User";
+import {socket} from "../../logic/WebSocket";
 
-function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessageList }) {
+function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
+
+    const [scrollbarIsAtTop, setScrollbarIsAtTop] = useState(false);
+    let loadedHistoryPart = loadedHistoryItemsCount;
 
     const containerRef = useRef(null);
     const scrollToBottom = () => {
@@ -22,51 +25,65 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
         }
     };
 
+    const handleScroll = () => {
+        if (containerRef.current) {
+            const scrollTop = containerRef.current.scrollTop;
+            setScrollbarIsAtTop(scrollTop === 0);
+
+            if (scrollTop === 0) {
+
+                socket.emit(
+                    "load_chat_history",
+                    {
+                        "chat_id": chat.id,
+                        "items_count": loadedHistoryPart + loadedHistoryItemsCount,
+                        "offset": loadedHistoryPart
+                    }
+                )
+
+                loadedHistoryPart += loadedHistoryItemsCount
+            }
+        }
+    };
+
     const [previewFiles, setPreviewFiles] = useState([]);
 
-    const chatUsers = chat.users;
+    const chatUsers = currentUser.chats.filter(c => c.id === chat.id)[0].users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
 
-    const isGroup = chat.is_group
 
-    let chatPhoto = getDefaultProfilePhotoLink(currentUser.name)
+
+
+    const selectedChat = currentUser.chats.filter(c => c.id === chat.id)[0];
+    const isGroup = selectedChat.isGroup
+
+
+
     let chatName;
     if (isGroup) {
-        chatName = chat.name ? chat.name : translations.newGroup[language];
-        const groupPhoto = chat.chat_photo_link
-        if (!groupPhoto) {
-            chatPhoto = group_svg
-        } else {
-            chatPhoto = groupPhoto
-        }
+        chatName = selectedChat.name;
     } else {
         const secondUser = otherUsers[0]
-
         chatName = `${secondUser.name} ${secondUser.surname}`
-        if (secondUser.profile_photo_link) {
-            chatPhoto = secondUser.profile_photo_link
-        }
     }
 
     function sendMessage() {
-
         if (!messageText) {
             return;
         }
 
-        const newMessage = {
-            "chat_id": chat.id,
-            "user_id": currentUser.id,
-            "is_read": false,
-            "send_at": new Date(),
-            "senf_files": [],
-            "text": messageText,
-            "id": Math.random()
-        }
+        console.log("send message to -> ", chat.id);
 
-        setMessageList(messageList.concat(newMessage));
-
-        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        socket.emit(
+            "send_message",
+            {
+                "user_id": currentUser.id,
+                "text": messageText,
+                "sent_files": [],
+                "send_at": new Date(),
+                "room": chat.id,
+            }
+        )
 
         setMessageText("")
         setPreviewFiles([])
@@ -77,13 +94,42 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
     };
 
 
+
     useEffect(() => {
-        setMessageText('');
-        setPreviewFiles([]);
+        // If scrollbar is at the top point
+        const container = containerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+        }
+
+
+
+
+        socket.on("send_message", (data) => {
+            const message = Message.fromJson(data.message);
+            const room = Number(data.room);
+
+            if (currentChatHistory.length === 0 || room === chat.id) {
+                setCurrentChatHistory(prevState => [...prevState, message]);
+            } else {
+
+            }
+        })
+
+
+
+
 
         scrollToBottom()
-    }, [messageList]);
 
+        return () => {
+            socket.off("send_message");
+
+            if (container) {
+                container.removeEventListener('scroll', handleScroll);
+            }
+        }
+    }, [currentChatHistory]);
 
     return (
         <div className="chat-details">
@@ -92,7 +138,7 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                     <img src={back_button_svg} alt={chat.name} className="back-button-image"/>
                 </button>
                 <div>
-                    <h2>{chatName}</h2>
+                    <h2>{chatName} {scrollbarIsAtTop ? "AAAA" : ""}</h2>
                     {!isGroup && (
                         <div className="username-header">
                             <p>@{otherUsers[0].username}</p>
@@ -100,39 +146,32 @@ function ChatArea ({ loading, currentUser, chat, onBack, messageList, setMessage
                     )}
                 </div>
                 <img
-                    src={chatPhoto}
+                    src={chat.chatPhotoLink}
                     alt="chat-photo"
                     className={`chat-photo chat-header-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
                 />
             </div>
             <div className="messages scrollable" ref={containerRef} style={{position: 'relative'}} >
-                {loading && <LoadingSpinner  />}
+                {currentChatHistory.map((message: Message) => {
+                    const sendByCurrentUser = message.userId === currentUser.id;
 
-                {messageList.map((message) => {
-                    const sendByCurrentUser = message.user_id === currentUser.id;
-
-                    let senderPhoto = null;
                     let senderName;
                     if (!sendByCurrentUser) {
-                        const user = otherUsers.filter((otherUser) => otherUser.id === message.user_id)[0];
+                        const user: User = otherUsers.filter((otherUser) => otherUser.id === message.userId)[0];
                         if (user) {
                             senderName = `${user.name} ${user.surname}`;
-                            const userPhoto = user.profile_photo_link
-                            if (userPhoto){
-                                senderPhoto = userPhoto
-                            }
                         }
                     }
 
                     return (
-                        <Message
+                        <MessageItem
                             key={message.id}
                             message={message}
                             isGroup={isGroup}
                             senderName={senderName}
                             sendByCurrentUser={sendByCurrentUser}
-                            senderPhoto={senderPhoto}
-                        ></Message>
+                            senderPhoto={currentUser.profilePhotoLink}
+                        ></MessageItem>
                     )
                 })}
             </div>

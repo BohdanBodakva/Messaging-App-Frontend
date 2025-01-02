@@ -1,16 +1,13 @@
 import React from "react";
 import './Chats.css';
 import settings_svg from '../../images/settings_button.svg';
-import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 
 function CurrentUser ({ user, displayUserProfile }) {
 
     return (
         <div className="current-user">
             <img
-                src={user.profile_photo_link ?
-                    user.profile_photo_link :
-                    getDefaultProfilePhotoLink(user.name)}
+                src={user.profilePhotoLink}
                 alt={user.username}
                 className={`user-photo ${user.profile_photo_link ? "black-border" : ""}`}
             />

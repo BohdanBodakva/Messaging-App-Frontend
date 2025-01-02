@@ -1,3 +1,6 @@
+import {SentFile} from "./SentFIle";
+import {User} from "./User";
+
 export class Message {
     constructor({
                     id,
@@ -18,12 +21,20 @@ export class Message {
     }
 
     static fromJson(json) {
+        let sentFiles = json.sent_files ? json.sent_files.map(c => {
+            return SentFile.fromJson(c);
+        }) : [];
+
+        let usersThatUnread = json.users_that_unread ? json.users_that_unread.map(c => {
+            return c.id;
+        }) : [];
+
         return new Message({
             id: json.id,
             text: json.text,
-            sentFiles: json.sent_files,
+            sentFiles: sentFiles,
             sendAt: json.send_at,
-            usersThatUnread: json.users_that_unread,
+            usersThatUnread: usersThatUnread,
             userId: json.user_id,
             chatId: json.chat_id,
         })

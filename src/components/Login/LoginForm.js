@@ -4,9 +4,8 @@ import {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
-import {User} from "../../models/User";
 
-function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessage }) {
+function LoginForm({ setLoading, onSwitch, successfulSignUpMessage }) {
     const { language } = useLanguage();
 
     const navigate = useNavigate();
@@ -47,21 +46,23 @@ function LoginForm({ setLoading, setCurrentUser, onSwitch, successfulSignUpMessa
             localStorage.setItem("access_token", accessToken);
             localStorage.setItem("refresh_token", refreshToken);
 
+            navigate("/");
+
             // Get current user
-            const url = `/users/current-user`
-
-            const getUserResponse = await makeRequest("GET", url);
-
-            if (getUserResponse.errorMessage) {
-              setErrorMessage(getUserResponse.errorMessage);
-            } else {
-                setErrorMessage("");
-
-                const currentUser = User.fromJson(getUserResponse.response.data.user)
-                setCurrentUser(currentUser);
-
-                navigate("/");
-            }
+            // const url = `/users/current-user`
+            //
+            // const getUserResponse = await makeRequest("GET", url);
+            //
+            // if (getUserResponse.errorMessage) {
+            //   setErrorMessage(getUserResponse.errorMessage);
+            // } else {
+            //     setErrorMessage("");
+            //
+            //     const currentUser = User.fromJson(getUserResponse.response.data.user)
+            //     setCurrentUser(currentUser);
+            //
+            //     navigate("/");
+            // }
         }
 
         setLoading(false);
