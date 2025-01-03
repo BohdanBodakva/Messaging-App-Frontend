@@ -8,6 +8,8 @@ import makeRequest from "../../logic/HttpRequests";
 import LoadingSpinner from "../Spinner/LoadingSpinner";
 import UserCard from "../UserCard/UserCard";
 import group_svg from "../../images/group.svg";
+import {socket} from "../../logic/WebSocket";
+import {User} from "../../models/User";
 
 function AddGroup({ currentUser, setCurrentUser, onBack }) {
     const { language } = useLanguage();
@@ -17,6 +19,7 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
     const [selectedPhoto, setSelectedPhoto] = useState(null);
 
     const [foundUsersInput, setFoundUsersInput] = useState("");
+    const [groupNameInput, setGroupNameInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
     const [groupUsers, setGroupUsers] = useState([]);
 
@@ -56,6 +59,24 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
 
     function removeUserFromGroup(user) {
         setGroupUsers((arr) => arr.filter((u) => u.id !== user.id));
+    }
+
+    function createGroup() {
+        const newGroupName = groupNameInput !== "" ? groupNameInput : null;
+
+        socket.emit(
+            "create_chat",
+            {
+                "name": newGroupName,
+                "chat_photo_link": "",
+                "current_user_id": currentUser.id,
+                "user_ids": groupUsers.map(u => u.id),
+                "is_group": true,
+                "created_at": new Date()
+            }
+        )
+
+        onBack()
     }
 
     return (
@@ -105,6 +126,8 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
                                     <label>
                                         <input
                                             type="text"
+                                            value={groupNameInput}
+                                            onChange={e => setGroupNameInput(e.target.value)}
                                             placeholder={`${translations.newGroupName[language]}...`}
                                         />
                                     </label>
@@ -175,7 +198,7 @@ function AddGroup({ currentUser, setCurrentUser, onBack }) {
                                 </div>
                             </div>
                             <div className="save-btn-container">
-                                <button className="save-button save">
+                                <button className="save-button save" onClick={createGroup}>
                                     {translations.createGroup[language]}
                                 </button>
                             </div>

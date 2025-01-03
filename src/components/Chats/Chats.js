@@ -225,18 +225,13 @@ function Chats ({ currentUser, setCurrentUser }) {
 
         socket.on("create_chat", (data) => {
             const currentUserId = Number(data.current_user_id);
-            const user = User.fromJson(data.user);
+            const users = data.users.map(u => User.fromJson(u));
             const chat = Chat.fromJson(data.chat);
-            console.log("a CHAT => ", chat)
 
+            const userIds = users.map(u => u.id);
             const currentChatIds = currentUserRef.current.chats.map(c => c.id);
 
-            console.log("C C I ===> ", currentChatIds)
-
             if (currentUserRef.current.id === currentUserId) {
-
-                console.log("I CREATED CHAT")
-
                 if (!currentChatIds.includes(chat.id)) {
 
                     setCurrentUser(prev => {
@@ -244,38 +239,23 @@ function Chats ({ currentUser, setCurrentUser }) {
                         return prev;
                     });
 
-                    // setDisplayedChats(prev => [...prev, chat])
-                } else {
-
+                    setDisplayedChats(prev => [...prev, chat])
                 }
-
-                socket.emit("join_room", { "room": chat.id });
 
                 selectChat(chat.id)
-                clearFoundUsersInput()
 
-            }
-            else if (currentUserRef.current.id === user.id) {
-
-                console.log("CREATED CHAT WITH ME")
-
-
+            } else if (userIds.includes(currentUserRef.current.id)) {
                 if (!currentChatIds.includes(chat.id)) {
-
                     setCurrentUser(prev => {
                         prev.chats.push(chat);
                         return prev;
                     });
-
-                    // setDisplayedChats(prev => [...prev, chat])
-                } else {
-
+                    setDisplayedChats(prev => [...prev, chat])
                 }
-
-                socket.emit("join_room", { "room": chat.id });
-
-                clearFoundUsersInput()
             }
+
+            socket.emit("join_room", { "room": chat.id });
+            clearFoundUsersInput()
         })
 
         // =============================================================================
@@ -322,7 +302,8 @@ function Chats ({ currentUser, setCurrentUser }) {
             "create_chat",
             {
                 "current_user_id": currentUser.id,
-                "user_id": user.id,
+                "user_ids": [user.id],
+                "is_group": false,
                 "created_at": new Date()
             }
         )
