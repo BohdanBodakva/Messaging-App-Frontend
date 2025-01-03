@@ -14,7 +14,7 @@ import {socket} from "../../logic/WebSocket";
 import {User} from "../../models/User";
 import {Message} from "../../models/Message";
 
-const loadedHistoryItemsCount = 6;
+const loadedHistoryItemsCount = 5;
 
 function Chats ({ currentUser, setCurrentUser }) {
     const { language } = useLanguage();
@@ -28,20 +28,23 @@ function Chats ({ currentUser, setCurrentUser }) {
     const [foundUsers, setFoundUsers] = useState([]);
 
     const [currentChatHistory, setCurrentChatHistory] = useState([]);
+    const [loadChatHistory, setLoadChatHistory] = useState(true);
+    const [offset, setOffset] = useState(0);
 
     const [loading, setLoading] = useState(false);
 
     const [selectedChat, setSelectedChat] = useState(null);
 
-    function selectChat(chat_id) {
-        setCurrentChatHistory([]);
+    function selectChat(e, chat_id) {
+        e.preventDefault();
 
         const chat = currentUser.chats.filter((c) => c.id === chat_id)[0];
 
         if (chat && (selectedChat ? selectedChat.id !== chat.id : true)) {
+            setLoadChatHistory(true);
+            setOffset(0);
+            setCurrentChatHistory([]);
             setSelectedChat(chat);
-
-            console.log("selected chat___: ", selectedChat);
 
             socket.emit(
                 "load_chat_history",
@@ -51,6 +54,8 @@ function Chats ({ currentUser, setCurrentUser }) {
                     "offset": 0
                 }
             )
+        } else {
+            setOffset(0)
         }
 
 
@@ -79,6 +84,9 @@ function Chats ({ currentUser, setCurrentUser }) {
 
 
         // =============================================================================
+
+
+
 
 
 
@@ -112,23 +120,29 @@ function Chats ({ currentUser, setCurrentUser }) {
 
         socket.on("load_chat_history", (data) => {
 
+
             const chatId = Number(data.chat_id);
+            const isEnd = Boolean(data.is_end);
             const messages = data.chat_history ?
                 data.chat_history.map(m => Message.fromJson(m)) : [];
 
-            // console.log("GGGGGGG: ", chatId, currentChatHistory[0].chatId)
+            console.log(`LLL, offset=${offset}, isEnd=${isEnd}`);
 
-            // if (currentChatHistory.length !== 0 && chatId === currentChatHistory[0].chatId) {
-            //     setCurrentChatHistory(prevState => [...prevState, ...messages]);
-            // } else {
-            setCurrentChatHistory(prevState => [...messages, ...prevState]);
-            // }
+            if (isEnd) {
+                setLoadChatHistory(false);
+            }
+
+            if (messages.length > 0) {
+                setCurrentChatHistory(prevState => [...messages, ...prevState]);
+                setOffset(prevState => prevState + loadedHistoryItemsCount);
+            }
+
+
+
 
         })
 
         socket.on("validate_refreshed_token", (data) => {
-            console.log(data);
-
             const user_id = data.user_id;
 
             socket.emit(
@@ -167,8 +181,6 @@ function Chats ({ currentUser, setCurrentUser }) {
         })
 
         socket.on("validate_token_error", (data) => {
-            console.log("Token validation failed: ", data);
-
             if (data.error.includes("Signature has expired")) {
                 // refresh access_token
                 console.log("let's go and refresh");
@@ -263,18 +275,12 @@ function Chats ({ currentUser, setCurrentUser }) {
 
     function displayAddGroupWindow () {
         setIsAddGroupDisplayed(true);
-
-
-
-        // socket.emit(
-        //     "validate_token",
-        //     {"access_token": localStorage.getItem("access_token")}
-        // );
     }
 
     function closeChatArea() {
         setSelectedChat(null);
         setCurrentChatHistory([]);
+        setOffset(0);
     }
 
     function closeAddGroupWindow () {
@@ -368,7 +374,7 @@ function Chats ({ currentUser, setCurrentUser }) {
                                     chat={chat}
                                     currentUser={currentUser}
                                     selectedChat={selectedChat}
-                                    onClick={() => selectChat(chat.id)}
+                                    onClick={(e) => selectChat(e, chat.id)}
                                 />
                             ))}
                         </div>
@@ -379,7 +385,10 @@ function Chats ({ currentUser, setCurrentUser }) {
                         <ChatArea
                             socket={socket}
                             chat={selectedChat}
+                            offset={offset}
+                            loadChatHistory={loadChatHistory}
                             currentUser={currentUser}
+                            setLoadChatHistory={setLoadChatHistory}
                             loadedHistoryItemsCount={loadedHistoryItemsCount}
                             currentChatHistory={currentChatHistory}
                             setCurrentChatHistory={setCurrentChatHistory}

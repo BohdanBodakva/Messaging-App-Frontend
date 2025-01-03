@@ -1,5 +1,4 @@
 import {translations} from "../providers/translations/translations";
-import {useLanguage} from "../providers/translations/LanguageProvider";
 
 
 export function getFormattedDate(stringDate, language){
@@ -38,4 +37,34 @@ export function getFormattedDate(stringDate, language){
     } else {
         return `${date}.${sendDate.getFullYear()}, ${time}`
     }
+}
+
+export function isNextDay(nextDate, currentDate) {
+    const d1 = new Date(nextDate);
+    const d2 = new Date(currentDate);
+
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+
+    return (d1.getTime() - d2.getTime()) === 24 * 60 * 60 * 1000;
+}
+
+export function isToday(date) {
+    const today = new Date();
+    const inputDate = new Date(date);
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    return today.getTime() === inputDate.getTime();
+}
+
+export function isYesterday(date) {
+    const today = new Date();
+    const inputDate = new Date(date);
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    return (today.getTime() - inputDate.getTime()) === 24 * 60 * 60 * 1000;
 }

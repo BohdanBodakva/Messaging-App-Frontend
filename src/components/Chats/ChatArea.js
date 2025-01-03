@@ -8,15 +8,15 @@ import {translations} from "../../providers/translations/translations";
 import {Message} from "../../models/Message";
 import MessageItem from "./MessageItem";
 import type {User} from "../../models/User";
-import {socket} from "../../logic/WebSocket";
+import {isNextDay} from "../../constants/formattedDate";
 
-function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
+function ChatArea ({ socket, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
 
     const [scrollbarIsAtTop, setScrollbarIsAtTop] = useState(false);
-    let loadedHistoryPart = loadedHistoryItemsCount;
+
 
     const containerRef = useRef(null);
     const scrollToBottom = () => {
@@ -25,26 +25,7 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
         }
     };
 
-    const handleScroll = () => {
-        if (containerRef.current) {
-            const scrollTop = containerRef.current.scrollTop;
-            setScrollbarIsAtTop(scrollTop === 0);
 
-            if (scrollTop === 0) {
-
-                socket.emit(
-                    "load_chat_history",
-                    {
-                        "chat_id": chat.id,
-                        "items_count": loadedHistoryPart + loadedHistoryItemsCount,
-                        "offset": loadedHistoryPart
-                    }
-                )
-
-                loadedHistoryPart += loadedHistoryItemsCount
-            }
-        }
-    };
 
     const [previewFiles, setPreviewFiles] = useState([]);
 
@@ -72,8 +53,6 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
             return;
         }
 
-        console.log("send message to -> ", chat.id);
-
         socket.emit(
             "send_message",
             {
@@ -96,14 +75,37 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
 
 
     useEffect(() => {
+
+        const handleScroll = () => {
+            if (containerRef.current) {
+                const scrollTop = containerRef.current.scrollTop;
+                setScrollbarIsAtTop(scrollTop === 0);
+
+                const hasScrollbar = containerRef.current.scrollHeight > containerRef.current.clientHeight;
+
+                if (scrollTop === 0 && hasScrollbar && loadChatHistory) {
+
+                    socket.emit(
+                        "load_chat_history",
+                        {
+                            "chat_id": chat.id,
+                            "items_count": loadedHistoryItemsCount,
+                            "offset": offset
+                        }
+                    )
+
+                    setLoadChatHistory(true);
+
+
+                }
+            }
+        };
+
         // If scrollbar is at the top point
         const container = containerRef.current;
         if (container) {
             container.addEventListener('scroll', handleScroll);
         }
-
-
-
 
         socket.on("send_message", (data) => {
             const message = Message.fromJson(data.message);
@@ -116,11 +118,22 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
             }
         })
 
+        socket.on("delete_message", (data) => {
+            const messageId = Number(data.message_id);
+            const chatId = Number(data.chat_id);
 
-
-
+            if (chat.id === chatId) {
+                setCurrentChatHistory(prevState => {
+                    return prevState.filter((m) => m.id !== messageId);
+                })
+            }
+        })
 
         scrollToBottom()
+
+        // currentChatHistory.map((m) => {
+        //     console.log(m.id)
+        // })
 
         return () => {
             socket.off("send_message");
@@ -129,7 +142,10 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
                 container.removeEventListener('scroll', handleScroll);
             }
         }
-    }, [currentChatHistory]);
+    },
+        // [chat, offset, loadChatHistory, currentChatHistory])
+        [offset, loadChatHistory, currentChatHistory])
+    ;
 
     return (
         <div className="chat-details">
@@ -138,7 +154,7 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
                     <img src={back_button_svg} alt={chat.name} className="back-button-image"/>
                 </button>
                 <div>
-                    <h2>{chatName} {scrollbarIsAtTop ? "AAAA" : ""}</h2>
+                    <h2>{chatName}</h2>
                     {!isGroup && (
                         <div className="username-header">
                             <p>@{otherUsers[0].username}</p>
@@ -152,7 +168,7 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
                 />
             </div>
             <div className="messages scrollable" ref={containerRef} style={{position: 'relative'}} >
-                {currentChatHistory.map((message: Message) => {
+                {currentChatHistory.map((message: Message, idx, elements) => {
                     const sendByCurrentUser = message.userId === currentUser.id;
 
                     let senderName;
@@ -163,13 +179,35 @@ function ChatArea ({ socket, loadedHistoryItemsCount, currentChatHistory, setCur
                         }
                     }
 
+                    let prevDayMessageBorder;
+                    let prevDayMessageText = null;
+                    try {
+                        if (idx === 0) {
+                            prevDayMessageText = translations.startOfTheChat[language];
+                            prevDayMessageBorder = true;
+                        } else {
+                            const prevMessageItem: Message = elements[idx - 1];
+
+                            if (isNextDay(message.sendAt, prevMessageItem.sendAt)) {
+                                prevDayMessageBorder = true;
+                            }
+                        }
+                    } catch (err) {
+                        prevDayMessageBorder = false;
+                    }
+
                     return (
                         <MessageItem
-                            key={message.id}
+                            key={idx}
+                            socket={socket}
                             message={message}
                             isGroup={isGroup}
+                            loadChatHistory={loadChatHistory}
+                            chatId={chat.id}
                             senderName={senderName}
+                            prevDayMessageText={prevDayMessageText}
                             sendByCurrentUser={sendByCurrentUser}
+                            prevDayMessageBorder={prevDayMessageBorder}
                             senderPhoto={currentUser.profilePhotoLink}
                         ></MessageItem>
                     )

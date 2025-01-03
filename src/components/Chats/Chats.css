@@ -742,3 +742,40 @@
     padding: 5px;
     box-sizing: border-box;
 }
+
+.next-day-message-border {
+    position: relative;
+    margin-bottom: 14px;
+    height: 0.2px;
+    background-color: #cdcdcd;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.next-day-message-border-msg {
+    position: absolute;
+    background-color: #fff;
+    padding: 0 10px;
+    color: #cdcdcd;
+    font-size: 14px;
+}
+
+.next-day-message-text {
+    position: relative;
+    margin-bottom: 25px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.next-day-message-border-text {
+    position: absolute;
+    background-color: #fff;
+    padding: 0 10px;
+    color: #cdcdcd;
+    font-size: 14px;
+}
+

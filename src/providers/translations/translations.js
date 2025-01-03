@@ -162,5 +162,9 @@ export const translations = {
     successfulSignUpMessage: {
         en: "User is registered successfully. Please log in.",
         ua: "Користувача успішно зареєстровано. Будь ласка, увійдіть."
+    },
+    startOfTheChat: {
+        en: "Chat created",
+        ua: "Чат створено"
     }
 };
