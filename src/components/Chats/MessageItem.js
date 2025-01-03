@@ -2,10 +2,9 @@ import React, {useEffect, useState} from "react";
 import './Chats.css';
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
-import getDefaultProfilePhotoLink from "../../constants/defaultPhotoLinks";
 import {getFormattedDate} from "../../constants/formattedDate";
 
-function MessageItem ({ socket, loadChatHistory, isGroup, message, chatId, prevDayMessageBorder, prevDayMessageText, sendByCurrentUser, senderName, senderPhoto }) {
+function MessageItem ({ socket, loadChatHistory, message, chatId, prevDayMessageBorder, prevDayMessageText, sendByCurrentUser, senderName, senderPhoto }) {
     const { language } = useLanguage();
 
     const [deleteMenu, setDeleteMenu] = useState(null);

@@ -166,5 +166,9 @@ export const translations = {
     startOfTheChat: {
         en: "Chat created",
         ua: "Чат створено"
+    },
+    findUsersOrCreateGroup: {
+        en: "Find users ot create new group",
+        ua: "Знайдіть корисувачів чи створіть нову групу"
     }
 };

@@ -6,7 +6,7 @@ import {translations} from "../../providers/translations/translations";
 import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {getFormattedDate} from "../../constants/formattedDate";
 
-function ChatItem ({ currentUser, chat, selectedChat, onClick }) {
+function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick }) {
     const {language} = useLanguage();
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);

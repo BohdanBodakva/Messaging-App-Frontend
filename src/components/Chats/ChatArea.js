@@ -10,7 +10,7 @@ import MessageItem from "./MessageItem";
 import type {User} from "../../models/User";
 import {isNextDay} from "../../constants/formattedDate";
 
-function ChatArea ({ socket, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
+function ChatArea ({ socket, displayedChats, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
@@ -66,12 +66,17 @@ function ChatArea ({ socket, setLoadChatHistory, loadChatHistory, offset, loaded
 
         setMessageText("")
         setPreviewFiles([])
+
+        // moveChatToTop();
     }
 
     const handleFileChange = (event) => {
         setPreviewFiles(Array.from(event.target.files)); // Convert FileList to Array
     };
 
+    // function moveChatToTop() {
+    //     displayedChats()
+    // }
 
 
     useEffect(() => {
@@ -111,7 +116,7 @@ function ChatArea ({ socket, setLoadChatHistory, loadChatHistory, offset, loaded
             const message = Message.fromJson(data.message);
             const room = Number(data.room);
 
-            if (currentChatHistory.length === 0 || room === chat.id) {
+            if (room === chat.id) {
                 setCurrentChatHistory(prevState => [...prevState, message]);
             } else {
 
@@ -164,7 +169,7 @@ function ChatArea ({ socket, setLoadChatHistory, loadChatHistory, offset, loaded
                 <img
                     src={chat.chatPhotoLink}
                     alt="chat-photo"
-                    className={`chat-photo chat-header-photo ${currentUser.profile_photo_link ? "black-border" : ""}`}
+                    className={`chat-photo chat-header-photo ${currentUser.profilePhotoLink ? "black-border" : ""}`}
                 />
             </div>
             <div className="messages scrollable" ref={containerRef} style={{position: 'relative'}} >

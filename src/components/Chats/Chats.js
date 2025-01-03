@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {use, useEffect, useRef, useState} from "react";
 import './Chats.css';
 import ChatItem from "./ChatItem";
 import ChatArea from "./ChatArea";
@@ -13,16 +13,25 @@ import AddGroup from "../AddGroup/AddGroup";
 import {socket} from "../../logic/WebSocket";
 import {User} from "../../models/User";
 import {Message} from "../../models/Message";
+import {Chat} from "../../models/Chat";
 
 const loadedHistoryItemsCount = 5;
 
 function Chats ({ currentUser, setCurrentUser }) {
+    const currentUserRef = useRef(currentUser);
+    useEffect(() => {
+        currentUserRef.current = currentUser;
+    }, [currentUser]);
+
+
     const { language } = useLanguage();
 
     const navigate = useNavigate();
 
     const[isUserProfileDisplayed, setIsUserProfileDisplayed] = useState(false);
     const[isAddGroupDisplayed, setIsAddGroupDisplayed] = useState(false);
+
+    const [displayedChats, setDisplayedChats] = useState([]);
 
     const [foundUsersInput, setFoundUsersInput] = useState("");
     const [foundUsers, setFoundUsers] = useState([]);
@@ -35,10 +44,8 @@ function Chats ({ currentUser, setCurrentUser }) {
 
     const [selectedChat, setSelectedChat] = useState(null);
 
-    function selectChat(e, chat_id) {
-        e.preventDefault();
-
-        const chat = currentUser.chats.filter((c) => c.id === chat_id)[0];
+    function selectChat(chat_id) {
+        const chat = currentUserRef.current.chats.filter((c) => c.id === chat_id)[0];
 
         if (chat && (selectedChat ? selectedChat.id !== chat.id : true)) {
             setLoadChatHistory(true);
@@ -74,17 +81,9 @@ function Chats ({ currentUser, setCurrentUser }) {
             return;
         }
 
-        // WEBSOCKET CONNECTION
-        // const socket = io(webSocketBackendUrl, {
-        //     transports: ['websocket'],
-        // });
-        //
-        // setSocketConnection(socket);
-
 
 
         // =============================================================================
-
 
 
 
@@ -99,6 +98,8 @@ function Chats ({ currentUser, setCurrentUser }) {
             const user = User.fromJson(userJson);
 
             setCurrentUser(user);
+
+            setDisplayedChats(user.chats);
 
             user.chats.forEach((c) => {
                 socket.emit(
@@ -221,6 +222,62 @@ function Chats ({ currentUser, setCurrentUser }) {
                 navigate("/login");
             }
         })
+
+        socket.on("create_chat", (data) => {
+            const currentUserId = Number(data.current_user_id);
+            const user = User.fromJson(data.user);
+            const chat = Chat.fromJson(data.chat);
+            console.log("a CHAT => ", chat)
+
+            const currentChatIds = currentUserRef.current.chats.map(c => c.id);
+
+            console.log("C C I ===> ", currentChatIds)
+
+            if (currentUserRef.current.id === currentUserId) {
+
+                console.log("I CREATED CHAT")
+
+                if (!currentChatIds.includes(chat.id)) {
+
+                    setCurrentUser(prev => {
+                        prev.chats.push(chat);
+                        return prev;
+                    });
+
+                    // setDisplayedChats(prev => [...prev, chat])
+                } else {
+
+                }
+
+                socket.emit("join_room", { "room": chat.id });
+
+                selectChat(chat.id)
+                clearFoundUsersInput()
+
+            }
+            else if (currentUserRef.current.id === user.id) {
+
+                console.log("CREATED CHAT WITH ME")
+
+
+                if (!currentChatIds.includes(chat.id)) {
+
+                    setCurrentUser(prev => {
+                        prev.chats.push(chat);
+                        return prev;
+                    });
+
+                    // setDisplayedChats(prev => [...prev, chat])
+                } else {
+
+                }
+
+                socket.emit("join_room", { "room": chat.id });
+
+                clearFoundUsersInput()
+            }
+        })
+
         // =============================================================================
 
         socket.connect();
@@ -260,9 +317,15 @@ function Chats ({ currentUser, setCurrentUser }) {
         setFoundUsers([])
     }
 
-
     function startNewChat(user) {
-
+        socket.emit(
+            "create_chat",
+            {
+                "current_user_id": currentUser.id,
+                "user_id": user.id,
+                "created_at": new Date()
+            }
+        )
     }
 
     function createGroup(user) {
@@ -285,6 +348,16 @@ function Chats ({ currentUser, setCurrentUser }) {
 
     function closeAddGroupWindow () {
         setIsAddGroupDisplayed(false);
+    }
+
+    function moveChatToTop() {
+        const selectedChatId = selectedChat.id;
+
+        // setDisplayedChats(prev => {
+        //     return prev.filter(c => c.id !== selectedChatId).push(selectedChat);
+        //
+        // })
+
     }
 
     return (
@@ -356,8 +429,7 @@ function Chats ({ currentUser, setCurrentUser }) {
                                             <FoundUserItem
                                                 key={`found_user_${user.id}`}
                                                 user={user}
-                                                onClick={() => {
-                                                }}
+                                                onClick={() => { startNewChat(user) }}
                                             />
                                         ))}
                                     </div>
@@ -365,20 +437,29 @@ function Chats ({ currentUser, setCurrentUser }) {
                             </div>
                         </div>
                     </div>
-                    {currentUser && (
-                        <div className="scrollable">
-                            {currentUser.chats && currentUser.chats.map((chat) => (
-                                <ChatItem
-                                    socket={socket}
-                                    key={`chat_item_${chat.id}`}
-                                    chat={chat}
-                                    currentUser={currentUser}
-                                    selectedChat={selectedChat}
-                                    onClick={(e) => selectChat(e, chat.id)}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    <div className="user-items-container">
+                        {currentUser && (
+                            <div
+                                className={
+                                    `scrollable 
+                                    ${currentUser.chats.length > 0 ? "" : "display-search-users-message"}`
+                                }
+                            >
+                                {currentUser.chats.length > 0 ? currentUser.chats.map((chat) => (
+                                    <ChatItem
+                                        socket={socket}
+                                        key={`chat_item_${chat.id}`}
+                                        chat={chat}
+                                        displayedChats={displayedChats}
+                                        currentUser={currentUser}
+                                        selectedChat={selectedChat}
+                                        onClick={() => selectChat(chat.id)}
+                                    />
+                                )) : translations.findUsersOrCreateGroup[language]}
+                            </div>
+                        )}
+                    </div>
+
                 </div>
                 {selectedChat ? (
                     <div className="chat-area">
@@ -387,6 +468,8 @@ function Chats ({ currentUser, setCurrentUser }) {
                             chat={selectedChat}
                             offset={offset}
                             loadChatHistory={loadChatHistory}
+                            displayedChats={displayedChats}
+                            moveChatToTop={moveChatToTop}
                             currentUser={currentUser}
                             setLoadChatHistory={setLoadChatHistory}
                             loadedHistoryItemsCount={loadedHistoryItemsCount}
