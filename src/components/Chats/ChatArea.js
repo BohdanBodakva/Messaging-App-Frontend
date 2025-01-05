@@ -10,7 +10,7 @@ import MessageItem from "./MessageItem";
 import type {User} from "../../models/User";
 import {isNextDay} from "../../constants/formattedDate";
 
-function ChatArea ({ socket, displayedChats, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
+function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
@@ -29,13 +29,13 @@ function ChatArea ({ socket, displayedChats, setLoadChatHistory, loadChatHistory
 
     const [previewFiles, setPreviewFiles] = useState([]);
 
-    const chatUsers = currentUser.chats.filter(c => c.id === chat.id)[0].users;
+    const chatUsers = displayedChats.filter(c => c.id === chat.id)[0].users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
 
 
 
 
-    const selectedChat = currentUser.chats.filter(c => c.id === chat.id)[0];
+    const selectedChat = displayedChats.filter(c => c.id === chat.id)[0];
     const isGroup = selectedChat.isGroup
 
 
@@ -116,10 +116,21 @@ function ChatArea ({ socket, displayedChats, setLoadChatHistory, loadChatHistory
             const message = Message.fromJson(data.message);
             const room = Number(data.room);
 
+            const displayedChatsIds = displayedChats.map(c => c.id);
+
+            if (displayedChatsIds.includes(room)) {
+                setDisplayedChats(prev => {
+                    const currentChat = prev.filter(c => c.id === room)[0];
+                    currentChat.messages = [...currentChat.messages, message];
+
+                    const otherChats = prev.filter(c => c.id !== room);
+
+                    return [currentChat, ...otherChats]
+                })
+            }
+
             if (room === chat.id) {
                 setCurrentChatHistory(prevState => [...prevState, message]);
-            } else {
-
             }
         })
 

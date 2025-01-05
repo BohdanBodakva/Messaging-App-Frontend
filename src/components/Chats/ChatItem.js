@@ -11,7 +11,7 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
-    const currChat = currentUser.chats.filter((c) => c.id === chat.id)[0];
+    const currChat = displayedChats.filter((c) => c.id === chat.id)[0];
     const chatUsers = currChat.users;
     const otherUsers = chatUsers.filter((user) => user.id !== currentUser.id);
 
@@ -39,6 +39,8 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
     }
 
     useEffect(() => {
+        console.log("CHAT MESSAGES 13: ", chat.messages)
+
         const unreadMessagesCount = currentUser.unreadMessages && currentUser.unreadMessages
             .filter((m) => m.chatId === chat.id);
 
