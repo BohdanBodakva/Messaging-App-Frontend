@@ -66,17 +66,11 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
 
         setMessageText("")
         setPreviewFiles([])
-
-        // moveChatToTop();
     }
 
     const handleFileChange = (event) => {
         setPreviewFiles(Array.from(event.target.files)); // Convert FileList to Array
     };
-
-    // function moveChatToTop() {
-    //     displayedChats()
-    // }
 
 
     useEffect(() => {
@@ -112,27 +106,31 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
             container.addEventListener('scroll', handleScroll);
         }
 
-        socket.on("send_message", (data) => {
-            const message = Message.fromJson(data.message);
-            const room = Number(data.room);
-
-            const displayedChatsIds = displayedChats.map(c => c.id);
-
-            if (displayedChatsIds.includes(room)) {
-                setDisplayedChats(prev => {
-                    const currentChat = prev.filter(c => c.id === room)[0];
-                    currentChat.messages = [...currentChat.messages, message];
-
-                    const otherChats = prev.filter(c => c.id !== room);
-
-                    return [currentChat, ...otherChats]
-                })
-            }
-
-            if (room === chat.id) {
-                setCurrentChatHistory(prevState => [...prevState, message]);
-            }
-        })
+        // socket.on("send_message", (data) => {
+        //     const message = Message.fromJson(data.message);
+        //     const room = Number(data.room);
+        //
+        //     const displayedChatsIds = displayedChats.map(c => c.id);
+        //
+        //     console.log(`send_message -> room: ${room}, displayedChatsIds: ${displayedChatsIds}`);
+        //
+        //     if (displayedChatsIds.includes(room)) {
+        //         setDisplayedChats(prev => {
+        //             const currentChat = prev.filter(c => c.id === room)[0];
+        //             currentChat.messages = [...currentChat.messages, message];
+        //
+        //             console.log(`CURR CHAT -> ${currentChat.id}`);
+        //
+        //             const otherChats = prev.filter(c => c.id !== room);
+        //
+        //             return [currentChat, ...otherChats]
+        //         })
+        //     }
+        //
+        //     if (room === chat.id) {
+        //         setCurrentChatHistory(prevState => [...prevState, message]);
+        //     }
+        // })
 
         socket.on("delete_message", (data) => {
             const messageId = Number(data.message_id);
@@ -145,14 +143,10 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
             }
         })
 
-        scrollToBottom()
-
-        // currentChatHistory.map((m) => {
-        //     console.log(m.id)
-        // })
+        scrollToBottom();
 
         return () => {
-            socket.off("send_message");
+            // socket.off("send_message");
 
             if (container) {
                 container.removeEventListener('scroll', handleScroll);
@@ -212,12 +206,33 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
                         prevDayMessageBorder = false;
                     }
 
+                    let newMessage = false;
+                    try {
+                        if (idx !== 0) {
+                            const prevMessageItem: Message = elements[idx - 1];
+
+                            // console.log(`<><${currentUser.id}><>       prev: ${JSON.stringify(prevMessageItem)}, curr: ${JSON.stringify(message)}`);
+
+                            if (
+                                !prevMessageItem.usersThatUnread.includes(currentUser.id) &&
+                                message.usersThatUnread.includes(currentUser.id)
+                            ) {
+                                newMessage = true;
+                            }
+                        }
+                    } catch (err) {
+                        newMessage = false;
+                    }
+
+                    console.log(newMessage);
+
                     return (
                         <MessageItem
                             key={idx}
                             socket={socket}
                             message={message}
                             isGroup={isGroup}
+                            newMessage={newMessage}
                             loadChatHistory={loadChatHistory}
                             chatId={chat.id}
                             senderName={senderName}

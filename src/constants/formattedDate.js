@@ -29,7 +29,12 @@ export function getFormattedDate(stringDate, language){
         return `${translations.yesterday[language]}, ${time}`
     }
 
-    const date = `${sendDate.getDate()}.${sendDate.getMonth() + 1}`;
+    const day = sendDate.getDate().toString().length > 1 ?
+        sendDate.getDate() : `0${sendDate.getDate()}`
+    const month = (sendDate.getMonth() + 1).toString().length > 1 ?
+        sendDate.getMonth() + 1 : `0${sendDate.getMonth() + 1}`
+
+    const date = `${day}.${month}`;
 
     const isCurrentYear = sendDate.getFullYear() === todayDate.getFullYear();
     if (isCurrentYear) {

@@ -4,7 +4,7 @@ import {useLanguage} from "../../providers/translations/LanguageProvider";
 import {translations} from "../../providers/translations/translations";
 import {getFormattedDate} from "../../constants/formattedDate";
 
-function MessageItem ({ socket, loadChatHistory, message, chatId, prevDayMessageBorder, prevDayMessageText, sendByCurrentUser, senderName, senderPhoto }) {
+function MessageItem ({ socket, newMessage, loadChatHistory, message, chatId, prevDayMessageBorder, prevDayMessageText, sendByCurrentUser, senderName, senderPhoto }) {
     const { language } = useLanguage();
 
     const [deleteMenu, setDeleteMenu] = useState(null);
@@ -55,6 +55,14 @@ function MessageItem ({ socket, loadChatHistory, message, chatId, prevDayMessage
                 <div className="next-day-message-border">
                     <span className="next-day-message-border-msg">
                         {getFormattedDate(message.sendAt, language).split(',')[0]}
+                    </span>
+                </div>
+            )}
+
+            {newMessage && (
+                <div className="new-message-border">
+                    <span className="new-message-border-msg">
+                        {translations.newMessages[language]}
                     </span>
                 </div>
             )}

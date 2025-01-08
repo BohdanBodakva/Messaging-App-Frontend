@@ -170,5 +170,9 @@ export const translations = {
     findUsersOrCreateGroup: {
         en: "Find users ot create new group",
         ua: "Знайдіть корисувачів чи створіть нову групу"
+    },
+    newMessages: {
+        en: "New messages",
+        ua: "Нові повідомлення"
     }
 };

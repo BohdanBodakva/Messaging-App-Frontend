@@ -9,7 +9,12 @@ import {getFormattedDate} from "../../constants/formattedDate";
 function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick }) {
     const {language} = useLanguage();
 
-    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+    const [unreadMessages, setUnreadMessages] = useState(false);
+    useEffect(() => {
+        if (selectedChat && selectedChat.id === chat.id) {
+            setUnreadMessages(false);
+        }
+    }, [selectedChat])
 
     const currChat = displayedChats.filter((c) => c.id === chat.id)[0];
     const chatUsers = currChat.users;
@@ -39,13 +44,19 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
     }
 
     useEffect(() => {
-        console.log("CHAT MESSAGES 13: ", chat.messages)
+        const hasUnreadMessages = currentUser.unreadMessages &&
+            currentUser.unreadMessages.filter(
+                (m) => m.chatId === chat.id && m.usersThatUnread.includes(currentUser.id)
+            ).length > 0;
 
-        const unreadMessagesCount = currentUser.unreadMessages && currentUser.unreadMessages
-            .filter((m) => m.chatId === chat.id);
-
-        setUnreadMessagesCount(unreadMessagesCount);
+        setUnreadMessages(hasUnreadMessages);
     }, []);
+
+    useEffect(() => {
+        if (selectedChat && chat.id !== selectedChat.id && chat.id === displayedChats[0].id) {
+            setUnreadMessages(true);
+        }
+    }, [displayedChats]);
 
     return (
         <div
@@ -77,19 +88,25 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
                     </p>
                 </div>
             </div>
-            <div className="message-right-part ellipsis-block">
+            <div className="message-right-part">
                 {chat.messages.length > 0 && (
-                    <div>
+                    <div className="message-right-part-inner">
                         <div className="last-chat-message">
-                            <p>{chat.messages[chat.messages.length - 1].text}</p>
-                            <span className={`message-time}`}>
-                                {getFormattedDate(chat.messages[chat.messages.length - 1].sendAt, language)}
-                            </span>
+                            <div className="ellipsis-block">
+                                <p>{chat.messages[chat.messages.length - 1].text}</p>
+                            </div>
+                            <div className="msg-time-block">
+                                <span className={`message-time}`}>
+                                    {getFormattedDate(chat.messages[chat.messages.length - 1].sendAt, language)}
+                                </span>
+                            </div>
                         </div>
                         {
-                            currentUser.unreadMessages && currentUser.unreadMessages.filter((m) => m.usersThatUnread.includes(currentUser.id)) > 0 && (
-                                <div className="unread-messages">
-
+                            unreadMessages && (
+                                <div className="point-1-block">
+                                    <div className="point-size-1">
+                                        <div className="blue-point"></div>
+                                    </div>
                                 </div>
                             )
                         }

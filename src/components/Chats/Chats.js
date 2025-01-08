@@ -15,7 +15,7 @@ import {User} from "../../models/User";
 import {Message} from "../../models/Message";
 import {Chat} from "../../models/Chat";
 
-const loadedHistoryItemsCount = 5;
+const loadedHistoryItemsCount = 11;
 
 function Chats ({ currentUser, setCurrentUser }) {
     const currentUserRef = useRef(currentUser);
@@ -47,6 +47,10 @@ function Chats ({ currentUser, setCurrentUser }) {
     const [loading, setLoading] = useState(false);
 
     const [selectedChat, setSelectedChat] = useState(null);
+    const selectedChatRef = useRef(selectedChat);
+    useEffect(() => {
+        selectedChatRef.current = selectedChat;
+    }, [selectedChat]);
 
     function selectChat(chat_id) {
         const chat = displayedChatsRef.current.filter((c) => c.id === chat_id)[0];
@@ -63,6 +67,14 @@ function Chats ({ currentUser, setCurrentUser }) {
                     "chat_id": chat_id,
                     "items_count": loadedHistoryItemsCount,
                     "offset": 0
+                }
+            )
+
+            socket.emit(
+                "read_chat_history",
+                {
+                    "chat_id": chat_id,
+                    "user_id": currentUser.id
                 }
             )
         } else {
@@ -89,7 +101,41 @@ function Chats ({ currentUser, setCurrentUser }) {
 
         // =============================================================================
 
+        socket.on("send_message", (data) => {
+            const message = Message.fromJson(data.message);
+            const room = Number(data.room);
 
+            const displayedChatsIds = displayedChatsRef.current.map(c => c.id);
+
+            console.log(`send_message -> room: ${room}, displayedChatsIds: ${displayedChatsIds}`);
+
+            if (displayedChatsIds.includes(room)) {
+                // const currentChat = displayedChatsRef.current.filter(c => c.id === room)[0];
+                // currentChat.messages = [...currentChat.messages, message];
+                //
+                // const otherChats = displayedChatsRef.current.filter(c => c.id !== room);
+                //
+                // displayedChatsRef.current = [currentChat, ...otherChats]
+
+
+
+
+                setDisplayedChats(prev => {
+                    const currentChat = prev.filter(c => c.id === room)[0];
+                    currentChat.messages = [...currentChat.messages, message];
+
+                    console.log(`CURR CHAT -> ${currentChat.id}`);
+
+                    const otherChats = prev.filter(c => c.id !== room);
+
+                    return [currentChat, ...otherChats]
+                })
+            }
+
+            if (selectedChatRef.current && room === selectedChatRef.current.id) {
+                setCurrentChatHistory(prevState => [...prevState, message]);
+            }
+        })
 
 
 
@@ -101,10 +147,8 @@ function Chats ({ currentUser, setCurrentUser }) {
             const userJson = data.user;
             const user = User.fromJson(userJson);
 
-            console.log("IIIIIII: ", data);
-
             setCurrentUser(user);
-            setDisplayedChats(user.chats);
+            setDisplayedChats(user.chats.sort((a, b) => a.messages[0] - b.messages[0]));
 
             user.chats.forEach((c) => {
                 socket.emit(
@@ -221,6 +265,8 @@ function Chats ({ currentUser, setCurrentUser }) {
                     //     return prev;
                     // });
 
+                    // displayedChatsRef.current = [chat, ...displayedChatsRef.current]
+
                     setDisplayedChats(prev => [chat, ...prev])
                 }
 
@@ -233,9 +279,9 @@ function Chats ({ currentUser, setCurrentUser }) {
                     //     return prev;
                     // });
 
-                    displayedChatsRef.current = [...displayedChatsRef.current, chat]
+                    displayedChatsRef.current = [chat, ...displayedChatsRef.current]
 
-                    setDisplayedChats(prev => [chat, ...prev])
+                    // setDisplayedChats(prev => [chat, ...prev])
                 }
             }
 
@@ -294,10 +340,6 @@ function Chats ({ currentUser, setCurrentUser }) {
         )
     }
 
-    function createGroup(user) {
-
-    }
-
     function closeProfileWindow () {
         setIsUserProfileDisplayed(false);
     }
@@ -310,20 +352,18 @@ function Chats ({ currentUser, setCurrentUser }) {
         setSelectedChat(null);
         setCurrentChatHistory([]);
         setOffset(0);
+
+        socket.emit(
+            "read_chat_history",
+            {
+                "user_id": currentUser.id,
+                "chat_id": selectedChat.id
+            }
+        )
     }
 
     function closeAddGroupWindow () {
         setIsAddGroupDisplayed(false);
-    }
-
-    function moveChatToTop() {
-        // const selectedChatId = selectedChat.id;
-
-        // setDisplayedChats(prev => {
-        //     return prev.filter(c => c.id !== selectedChatId).push(selectedChat);
-        //
-        // })
-
     }
 
     return (
@@ -425,7 +465,6 @@ function Chats ({ currentUser, setCurrentUser }) {
                             </div>
                         )}
                     </div>
-
                 </div>
                 {selectedChat ? (
                     <div className="chat-area">
@@ -436,7 +475,6 @@ function Chats ({ currentUser, setCurrentUser }) {
                             loadChatHistory={loadChatHistory}
                             displayedChats={displayedChats}
                             setDisplayedChats={setDisplayedChats}
-                            moveChatToTop={moveChatToTop}
                             currentUser={currentUser}
                             setLoadChatHistory={setLoadChatHistory}
                             loadedHistoryItemsCount={loadedHistoryItemsCount}
