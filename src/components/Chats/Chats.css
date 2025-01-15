@@ -735,20 +735,37 @@
 
 .last-chat-message {
     width: 100%;
-    max-width: 75%;
 }
 
 .message-right-part-inner {
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 .ellipsis-block {
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 2px;
     box-sizing: border-box;
+    right: 0;
+    text-align: right;
+}
+
+.ellipsis-block {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px;
+    box-sizing: border-box;
+    /*right: 0;*/
+}
+
+.ellipsis-block p {
+    margin: 0;
     right: 0;
 }
 
@@ -828,6 +845,8 @@
     align-items: center;
     width: 50px;
     right: 0;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .point-size-1 {

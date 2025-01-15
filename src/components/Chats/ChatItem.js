@@ -43,6 +43,8 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
         }
     }
 
+    const [firstRender, setFirstRender] = useState(true);
+
     useEffect(() => {
         const hasUnreadMessages = currentUser.unreadMessages &&
             currentUser.unreadMessages.filter(
@@ -53,9 +55,17 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
     }, []);
 
     useEffect(() => {
-        if (selectedChat && chat.id !== selectedChat.id && chat.id === displayedChats[0].id) {
-            setUnreadMessages(true);
+        if (firstRender) {
+            setFirstRender(false);
+            return;
         }
+
+        if (chat.id === displayedChats[0].id) {
+            if ((selectedChat && chat.id !== selectedChat.id) || (!selectedChat)) {
+                setUnreadMessages(true);
+            }
+        }
+
     }, [displayedChats]);
 
     return (
@@ -93,7 +103,7 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
                     <div className="message-right-part-inner">
                         <div className="last-chat-message">
                             <div className="ellipsis-block">
-                                <p>{chat.messages[chat.messages.length - 1].text}</p>
+                                {chat.messages[chat.messages.length - 1].text}
                             </div>
                             <div className="msg-time-block">
                                 <span className={`message-time}`}>

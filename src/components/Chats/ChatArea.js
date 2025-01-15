@@ -10,7 +10,7 @@ import MessageItem from "./MessageItem";
 import type {User} from "../../models/User";
 import {isNextDay} from "../../constants/formattedDate";
 
-function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
+function ChatArea ({ socket, displayedChats, setIsChatInfoDisplayed, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
 
     const [messageText, setMessageText] = useState("");
@@ -106,32 +106,6 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
             container.addEventListener('scroll', handleScroll);
         }
 
-        // socket.on("send_message", (data) => {
-        //     const message = Message.fromJson(data.message);
-        //     const room = Number(data.room);
-        //
-        //     const displayedChatsIds = displayedChats.map(c => c.id);
-        //
-        //     console.log(`send_message -> room: ${room}, displayedChatsIds: ${displayedChatsIds}`);
-        //
-        //     if (displayedChatsIds.includes(room)) {
-        //         setDisplayedChats(prev => {
-        //             const currentChat = prev.filter(c => c.id === room)[0];
-        //             currentChat.messages = [...currentChat.messages, message];
-        //
-        //             console.log(`CURR CHAT -> ${currentChat.id}`);
-        //
-        //             const otherChats = prev.filter(c => c.id !== room);
-        //
-        //             return [currentChat, ...otherChats]
-        //         })
-        //     }
-        //
-        //     if (room === chat.id) {
-        //         setCurrentChatHistory(prevState => [...prevState, message]);
-        //     }
-        // })
-
         socket.on("delete_message", (data) => {
             const messageId = Number(data.message_id);
             const chatId = Number(data.chat_id);
@@ -146,16 +120,11 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
         scrollToBottom();
 
         return () => {
-            // socket.off("send_message");
-
             if (container) {
                 container.removeEventListener('scroll', handleScroll);
             }
         }
-    },
-        // [chat, offset, loadChatHistory, currentChatHistory])
-        [offset, loadChatHistory, currentChatHistory])
-    ;
+    }, [offset, loadChatHistory, currentChatHistory]);
 
     return (
         <div className="chat-details">
@@ -172,6 +141,7 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
                     )}
                 </div>
                 <img
+                    onClick={() => setIsChatInfoDisplayed(true)}
                     src={chat.chatPhotoLink}
                     alt="chat-photo"
                     className={`chat-photo chat-header-photo ${currentUser.profilePhotoLink ? "black-border" : ""}`}
@@ -210,8 +180,6 @@ function ChatArea ({ socket, displayedChats, setDisplayedChats, setLoadChatHisto
                     try {
                         if (idx !== 0) {
                             const prevMessageItem: Message = elements[idx - 1];
-
-                            // console.log(`<><${currentUser.id}><>       prev: ${JSON.stringify(prevMessageItem)}, curr: ${JSON.stringify(message)}`);
 
                             if (
                                 !prevMessageItem.usersThatUnread.includes(currentUser.id) &&

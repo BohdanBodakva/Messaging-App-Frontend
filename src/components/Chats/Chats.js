@@ -14,6 +14,7 @@ import {socket} from "../../logic/WebSocket";
 import {User} from "../../models/User";
 import {Message} from "../../models/Message";
 import {Chat} from "../../models/Chat";
+import ChatInfo from "../ChatInfo/ChatInfo";
 
 const loadedHistoryItemsCount = 11;
 
@@ -30,6 +31,7 @@ function Chats ({ currentUser, setCurrentUser }) {
 
     const[isUserProfileDisplayed, setIsUserProfileDisplayed] = useState(false);
     const[isAddGroupDisplayed, setIsAddGroupDisplayed] = useState(false);
+    const[isChatInfoDisplayed, setIsChatInfoDisplayed] = useState(false);
 
     const [displayedChats, setDisplayedChats] = useState([]);
     const displayedChatsRef = useRef(displayedChats);
@@ -101,6 +103,19 @@ function Chats ({ currentUser, setCurrentUser }) {
 
         // =============================================================================
 
+        socket.on("delete_chat", (data) => {
+            const chatId = Number(data.chat_id);
+
+            const displayedChatIds = displayedChatsRef.current.map((c) => c.id);
+
+            if (selectedChatRef.current && selectedChatRef.current.id === chatId) {
+                setSelectedChat(null);
+                setDisplayedChats(displayedChatsRef.current.filter((c) => c.id !== chatId));
+            } else if (displayedChatIds.includes(chatId)) {
+                setDisplayedChats(displayedChatsRef.current.filter((c) => c.id !== chatId));
+            }
+        })
+
         socket.on("send_message", (data) => {
             const message = Message.fromJson(data.message);
             const room = Number(data.room);
@@ -110,16 +125,6 @@ function Chats ({ currentUser, setCurrentUser }) {
             console.log(`send_message -> room: ${room}, displayedChatsIds: ${displayedChatsIds}`);
 
             if (displayedChatsIds.includes(room)) {
-                // const currentChat = displayedChatsRef.current.filter(c => c.id === room)[0];
-                // currentChat.messages = [...currentChat.messages, message];
-                //
-                // const otherChats = displayedChatsRef.current.filter(c => c.id !== room);
-                //
-                // displayedChatsRef.current = [currentChat, ...otherChats]
-
-
-
-
                 setDisplayedChats(prev => {
                     const currentChat = prev.filter(c => c.id === room)[0];
                     currentChat.messages = [...currentChat.messages, message];
@@ -366,6 +371,10 @@ function Chats ({ currentUser, setCurrentUser }) {
         setIsAddGroupDisplayed(false);
     }
 
+    function closeChatInfoWindow () {
+        setIsChatInfoDisplayed(false);
+    }
+
     return (
         <div className="main-app-block" style={{position: "relative"}}>
             {isUserProfileDisplayed && (
@@ -386,6 +395,19 @@ function Chats ({ currentUser, setCurrentUser }) {
                         currentUser={currentUser}
                         setCurrentUser={setCurrentUser}
                         onBack={closeAddGroupWindow}
+                    />
+                </div>
+            )}
+
+            {isChatInfoDisplayed && (
+                <div className="displayed-user-profile">
+                    <ChatInfo
+                        socket={socket}
+                        currentUser={currentUser}
+                        setCurrentUser={setCurrentUser}
+                        onBack={closeChatInfoWindow}
+                        selectedChat={selectedChat}
+                        selectChat={selectChat}
                     />
                 </div>
             )}
@@ -472,6 +494,7 @@ function Chats ({ currentUser, setCurrentUser }) {
                             socket={socket}
                             chat={selectedChat}
                             offset={offset}
+                            setIsChatInfoDisplayed={setIsChatInfoDisplayed}
                             loadChatHistory={loadChatHistory}
                             displayedChats={displayedChats}
                             setDisplayedChats={setDisplayedChats}

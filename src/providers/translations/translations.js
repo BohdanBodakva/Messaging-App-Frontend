@@ -174,5 +174,13 @@ export const translations = {
     newMessages: {
         en: "New messages",
         ua: "Нові повідомлення"
+    },
+    deleteChat: {
+        en: "Delete chat",
+        ua: "Видалити чат"
+    },
+    openPrivateChat: {
+        en: "Open private chat",
+        ua: "Відкрити приватний чат"
     }
 };
