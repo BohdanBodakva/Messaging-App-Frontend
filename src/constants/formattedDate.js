@@ -1,7 +1,7 @@
 import {translations} from "../providers/translations/translations";
 
 
-export function getFormattedDate(stringDate, language){
+export function getFormattedDate(stringDate, language, smallDate = false){
     const todayDate = new Date();
     const sendDate = new Date(stringDate)
 
@@ -16,6 +16,9 @@ export function getFormattedDate(stringDate, language){
         (sendDate.getMonth() === todayDate.getMonth()) &&
         (sendDate.getFullYear() === todayDate.getFullYear());
     if (isToday) {
+        if (smallDate) {
+            return time
+        }
         return `${translations.today[language]}, ${time}`
     }
 
@@ -26,6 +29,9 @@ export function getFormattedDate(stringDate, language){
         (sendDate.getMonth() === yesterday.getMonth()) &&
         (sendDate.getFullYear() === yesterday.getFullYear());
     if (isYesterday) {
+        if (smallDate) {
+            return translations.yesterday[language]
+        }
         return `${translations.yesterday[language]}, ${time}`
     }
 
@@ -38,20 +44,26 @@ export function getFormattedDate(stringDate, language){
 
     const isCurrentYear = sendDate.getFullYear() === todayDate.getFullYear();
     if (isCurrentYear) {
+        if (smallDate) {
+            return date
+        }
         return `${date}, ${time}`
     } else {
+        if (smallDate) {
+            return `${date}.${sendDate.getFullYear()}`
+        }
         return `${date}.${sendDate.getFullYear()}, ${time}`
     }
 }
 
-export function isNextDay(nextDate, currentDate) {
+export function isDateBigger(nextDate, currentDate) {
     const d1 = new Date(nextDate);
     const d2 = new Date(currentDate);
 
     d1.setHours(0, 0, 0, 0);
     d2.setHours(0, 0, 0, 0);
 
-    return (d1.getTime() - d2.getTime()) === 24 * 60 * 60 * 1000;
+    return d1.getTime() > d2.getTime();
 }
 
 export function isToday(date) {

@@ -452,6 +452,10 @@
     display: block;
 }
 
+.message-time-1 {
+    color: #cdcdcd;
+}
+
 .message-time.sent-time {
     color: #cdcdcd;
 }

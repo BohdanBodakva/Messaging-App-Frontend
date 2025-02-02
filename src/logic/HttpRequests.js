@@ -3,6 +3,7 @@ import axios from 'axios';
 const EXPIRED_TOKEN_MESSAGE = 'Expired token';
 
 const backendUrl = "http://192.168.0.104:5001"
+// const backendUrl = "http://127.0.0.1:5000"
 
 async function sendRequestToBackend(
     method, url, body={}, headers={},

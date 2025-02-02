@@ -8,7 +8,7 @@ import {translations} from "../../providers/translations/translations";
 import {Message} from "../../models/Message";
 import MessageItem from "./MessageItem";
 import type {User} from "../../models/User";
-import {isNextDay} from "../../constants/formattedDate";
+import {isDateBigger} from "../../constants/formattedDate";
 
 function ChatArea ({ socket, displayedChats, setIsChatInfoDisplayed, setLoadChatHistory, loadChatHistory, offset, loadedHistoryItemsCount, currentChatHistory, setCurrentChatHistory, currentUser, chat, onBack }) {
     const { language } = useLanguage();
@@ -168,7 +168,7 @@ function ChatArea ({ socket, displayedChats, setIsChatInfoDisplayed, setLoadChat
                         } else {
                             const prevMessageItem: Message = elements[idx - 1];
 
-                            if (isNextDay(message.sendAt, prevMessageItem.sendAt)) {
+                            if (isDateBigger(message.sendAt, prevMessageItem.sendAt)) {
                                 prevDayMessageBorder = true;
                             }
                         }

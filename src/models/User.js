@@ -18,7 +18,7 @@ export class User {
         this.surname = surname;
         this.username = username;
         this._profilePhotoLink = profilePhotoLink ? profilePhotoLink : getDefaultProfilePhotoLink(name);
-        this.lastSeen = lastSeen;
+        this.lastSeen = lastSeen ? lastSeen : null;
         this.chats = chats;
         this.unreadMessages = unreadMessages;
     }

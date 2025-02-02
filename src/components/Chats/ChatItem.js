@@ -94,7 +94,8 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
                         <div className="green-point"></div>
                     </div>
                     <p className="user-status">
-                        {translations.online[language]}
+                        {!isGroup && secondUser && (secondUser.lastSeen ? secondUser.lastSeen : "online")}
+                        {/*{translations.online[language]}*/}
                     </p>
                 </div>
             </div>
@@ -106,8 +107,10 @@ function ChatItem ({ currentUser, displayedChats, chat, selectedChat, onClick })
                                 {chat.messages[chat.messages.length - 1].text}
                             </div>
                             <div className="msg-time-block">
-                                <span className={`message-time}`}>
-                                    {getFormattedDate(chat.messages[chat.messages.length - 1].sendAt, language)}
+                                <span className={`message-time ${selectedChat && selectedChat.id === chat.id ? "message-time-1" : ""}`}>
+                                    {getFormattedDate(
+                                        chat.messages[chat.messages.length - 1].sendAt, language, true
+                                    )}
                                 </span>
                             </div>
                         </div>
